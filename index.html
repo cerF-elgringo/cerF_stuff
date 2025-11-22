@@ -15,6 +15,7 @@
             flex-direction: column;
             color: #206cd2; /* Hosky Blue */
             font-family: "GROBOLD", sans-serif;
+            overflow: hidden; /* keep "PAMP GLABS" inside viewport */
         }
 
         #question {
@@ -28,30 +29,54 @@
             border: 2px solid #206cd2;
             background-color: black;
             color: #206cd2;
+            margin-bottom: 10px;
+        }
+
+        #press-enter {
+            font-size: 18px;
+            margin-bottom: 30px;
         }
 
         #output {
             font-size: 120px;
-            margin-top: 30px;
-            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes dance {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-40%, -60%) rotate(15deg); }
+            50% { transform: translate(-60%, -40%) rotate(-15deg); }
+            75% { transform: translate(-50%, -50%) rotate(10deg); }
+            100% { transform: translate(-50%, -50%) rotate(0deg); }
+        }
+
+        .dance {
+            animation: dance 1s infinite alternate;
         }
     </style>
 </head>
 <body>
     <div id="question">Should cerF learn to code?</div>
-    <input id="entry" type="text" placeholder="Press Enter" />
+    <input id="entry" type="text" placeholder="" />
+    <div id="press-enter">Press Enter</div>
     <div id="output"></div>
 
     <script>
         const entry = document.getElementById("entry");
         const output = document.getElementById("output");
         const question = document.getElementById("question");
+        const pressEnter = document.getElementById("press-enter");
 
         entry.addEventListener("keydown", function(e) {
             if (e.key === "Enter") {
                 question.style.display = "none";
                 entry.style.display = "none";
+                pressEnter.style.display = "none";
                 output.textContent = "PAMP GLABS";
+                output.classList.add("dance"); // start dancing
             }
         });
     </script>
