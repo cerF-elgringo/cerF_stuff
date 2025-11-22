@@ -41,6 +41,7 @@ html, body {
     font-size: 160px;
     position: absolute;
     white-space: nowrap;
+    color: #206cd2;
 }
 </style>
 </head>
@@ -56,9 +57,6 @@ const output = document.getElementById("output");
 const question = document.getElementById("question");
 const pressEnter = document.getElementById("press-enter");
 
-let dx = 10; // horizontal speed
-let dy = 8;  // vertical speed
-
 entry.addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
         question.style.display = "none";
@@ -66,32 +64,40 @@ entry.addEventListener("keydown", function(e) {
         pressEnter.style.display = "none";
         output.textContent = "PAMP GLABS";
 
-        // Force the browser to calculate size
+        // Force render to measure size
         output.style.left = "0px";
         output.style.top = "0px";
         const width = output.offsetWidth;
         const height = output.offsetHeight;
 
-        // start in center
+        // start center
         let x = (window.innerWidth - width) / 2;
         let y = (window.innerHeight - height) / 2;
-
         output.style.left = x + "px";
         output.style.top = y + "px";
+
+        // Random speed and rotation
+        let dx = (Math.random() * 12 + 4) * (Math.random() < 0.5 ? 1 : -1);
+        let dy = (Math.random() * 12 + 4) * (Math.random() < 0.5 ? 1 : -1);
+        let rotation = 0;
+        let dRot = (Math.random() * 6 + 2) * (Math.random() < 0.5 ? 1 : -1);
 
         function move() {
             x += dx;
             y += dy;
+            rotation += dRot;
 
-            // bounce inside the viewport
+            // bounce within viewport
             if (x <= 0 || x + width >= window.innerWidth) dx = -dx;
             if (y <= 0 || y + height >= window.innerHeight) dy = -dy;
 
             output.style.left = x + "px";
             output.style.top = y + "px";
+            output.style.transform = `rotate(${rotation}deg)`;
 
             requestAnimationFrame(move);
         }
+
         move();
     }
 });
