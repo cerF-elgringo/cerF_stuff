@@ -91,8 +91,8 @@ entry.addEventListener("keydown", function(e) {
             output.style.left = x + "px";
             output.style.top = y + "px";
 
-            // Small random wiggle rotation (-15 to +15 deg)
-            const wiggle = (Math.random() * 30 - 15);
+            // Small upright wiggle (-5° to +5°)
+            const wiggle = (Math.random() * 10 - 5);
             output.style.transform = `rotate(${wiggle}deg)`;
 
             requestAnimationFrame(move);
