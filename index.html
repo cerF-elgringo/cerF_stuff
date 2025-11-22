@@ -64,36 +64,36 @@ entry.addEventListener("keydown", function(e) {
         pressEnter.style.display = "none";
         output.textContent = "PAMP GLABS";
 
-        // Force render to measure size
+        // Measure text size
         output.style.left = "0px";
         output.style.top = "0px";
         const width = output.offsetWidth;
         const height = output.offsetHeight;
 
-        // start center
+        // Start center
         let x = (window.innerWidth - width) / 2;
         let y = (window.innerHeight - height) / 2;
         output.style.left = x + "px";
         output.style.top = y + "px";
 
-        // Random speed and rotation
-        let dx = (Math.random() * 12 + 4) * (Math.random() < 0.5 ? 1 : -1);
-        let dy = (Math.random() * 12 + 4) * (Math.random() < 0.5 ? 1 : -1);
-        let rotation = 0;
-        let dRot = (Math.random() * 6 + 2) * (Math.random() < 0.5 ? 1 : -1);
+        // Random speed and direction
+        let dx = (Math.random() * 10 + 4) * (Math.random() < 0.5 ? 1 : -1);
+        let dy = (Math.random() * 10 + 4) * (Math.random() < 0.5 ? 1 : -1);
 
         function move() {
             x += dx;
             y += dy;
-            rotation += dRot;
 
-            // bounce within viewport
+            // Bounce off edges
             if (x <= 0 || x + width >= window.innerWidth) dx = -dx;
             if (y <= 0 || y + height >= window.innerHeight) dy = -dy;
 
             output.style.left = x + "px";
             output.style.top = y + "px";
-            output.style.transform = `rotate(${rotation}deg)`;
+
+            // Small random wiggle rotation (-15 to +15 deg)
+            const wiggle = (Math.random() * 30 - 15);
+            output.style.transform = `rotate(${wiggle}deg)`;
 
             requestAnimationFrame(move);
         }
