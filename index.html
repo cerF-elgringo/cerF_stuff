@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>HOSKY GLABDLE</title>
 
-<!-- Embedded GROBOLD font from cdnfonts -->
+<!-- Embedded GROBOLD font from CDN -->
 <link href="https://fonts.cdnfonts.com/css/grobold" rel="stylesheet">
 
 <style>
@@ -23,7 +23,7 @@ html, body {
 }
 
 h1 {
-    font-size: 48px; /* 50% bigger than default ~32px */
+    font-size: 48px; /* 50% bigger than default */
     margin-bottom: 20px;
 }
 
@@ -60,7 +60,7 @@ h1 {
 #alphabet {
     display: flex;
     flex-wrap: wrap;
-    max-width: 420px; /* fits all letters nicely */
+    max-width: 420px;
     justify-content: center;
     gap: 5px;
     margin-top: 20px;
@@ -90,6 +90,13 @@ h1 {
     0% { transform: translateY(-50px); }
     100% { transform: translateY(110vh); }
 }
+
+/* Hidden input for mobile typing */
+#mobile-entry {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
 </style>
 </head>
 <body>
@@ -105,6 +112,9 @@ h1 {
 </div>
 
 <div id="alphabet"></div>
+
+<!-- Hidden input for mobile typing -->
+<input type="text" id="mobile-entry" maxlength="5" autofocus />
 
 <script>
 const targetWord = "HOSKY";
@@ -170,16 +180,17 @@ function startPoopRain(count = 50) {
     });
 }
 
-document.addEventListener('keydown', async function(e) {
+// Handle key input (desktop and mobile)
+function handleKeyInput(key) {
     const row = document.getElementById(`row${currentRow}`);
     const cells = row.querySelectorAll('.cell');
 
-    if (e.key === 'Backspace') {
+    if (key === 'Backspace') {
         if (currentCol > 0) {
             currentCol--;
             cells[currentCol].textContent = '';
         }
-    } else if (e.key === 'Enter') {
+    } else if (key === 'Enter') {
         if (currentCol === 5) {
             let guess = Array.from(cells).map(c => c.textContent).join('');
             for (let i = 0; i < 5; i++) {
@@ -204,23 +215,54 @@ document.addEventListener('keydown', async function(e) {
             currentCol = 0;
 
             if (guess === targetWord) {
-                await startPoopRain(80); // poop rain
-                alert("GJ IDJIOT U GOT IT WEN WEN WEN"); // success message immediately after
+                startPoopRain(80).then(() => {
+                    alert("GJ IDJIOT U GOT IT WEN WEN WEN");
+                });
             } else if (currentRow >= 6) {
                 alert(`Game over! The word was ${targetWord}.`);
             }
         }
-    } else if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+    } else if (/^[a-zA-Z]$/.test(key)) {
         if (currentCol < 5) {
-            cells[currentCol].textContent = e.key.toUpperCase();
+            cells[currentCol].textContent = key.toUpperCase();
             currentCol++;
         }
     }
+}
+
+// Desktop key handling
+document.addEventListener('keydown', (e) => {
+    handleKeyInput(e.key);
 });
+
+// Mobile handling: forward input from hidden input to grid
+const mobileInput = document.getElementById('mobile-entry');
+mobileInput.addEventListener('input', () => {
+    const value = mobileInput.value.toUpperCase();
+    for (let i = 0; i < 5; i++) {
+        const row = document.getElementById(`row${currentRow}`);
+        const cells = row.querySelectorAll('.cell');
+        cells[i].textContent = value[i] || '';
+    }
+    currentCol = value.length;
+});
+
+mobileInput.addEventListener('keydown', (e) => {
+    handleKeyInput(e.key);
+    setTimeout(() => {
+        mobileInput.value = '';
+    }, 0); // clear after processing
+});
+
+// Focus hidden input on mobile
+if (/Mobi|Android/i.test(navigator.userAgent)) {
+    mobileInput.focus();
+}
 </script>
 
 </body>
 </html>
+
 
 
 
