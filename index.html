@@ -66,9 +66,15 @@ entry.addEventListener("keydown", function(e) {
         pressEnter.style.display = "none";
         output.textContent = "PAMP GLABS";
 
+        // Force the browser to calculate size
+        output.style.left = "0px";
+        output.style.top = "0px";
+        const width = output.offsetWidth;
+        const height = output.offsetHeight;
+
         // start in center
-        let x = (window.innerWidth - output.offsetWidth)/2;
-        let y = (window.innerHeight - output.offsetHeight)/2;
+        let x = (window.innerWidth - width) / 2;
+        let y = (window.innerHeight - height) / 2;
 
         output.style.left = x + "px";
         output.style.top = y + "px";
@@ -77,9 +83,9 @@ entry.addEventListener("keydown", function(e) {
             x += dx;
             y += dy;
 
-            // bounce off edges
-            if (x <= 0 || x + output.offsetWidth >= window.innerWidth) dx = -dx;
-            if (y <= 0 || y + output.offsetHeight >= window.innerHeight) dy = -dy;
+            // bounce inside the viewport
+            if (x <= 0 || x + width >= window.innerWidth) dx = -dx;
+            if (y <= 0 || y + height >= window.innerHeight) dy = -dy;
 
             output.style.left = x + "px";
             output.style.top = y + "px";
