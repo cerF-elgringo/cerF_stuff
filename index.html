@@ -76,24 +76,28 @@ entry.addEventListener("keydown", function(e) {
         output.style.left = x + "px";
         output.style.top = y + "px";
 
-        // Random speed and direction
+        // Random speed
         let dx = (Math.random() * 10 + 4) * (Math.random() < 0.5 ? 1 : -1);
         let dy = (Math.random() * 10 + 4) * (Math.random() < 0.5 ? 1 : -1);
+
+        let rotation = 0;
+        let rotDirection = Math.random() < 0.5 ? 1 : -1;
 
         function move() {
             x += dx;
             y += dy;
 
-            // Bounce off edges
             if (x <= 0 || x + width >= window.innerWidth) dx = -dx;
             if (y <= 0 || y + height >= window.innerHeight) dy = -dy;
 
             output.style.left = x + "px";
             output.style.top = y + "px";
 
-            // Small upright wiggle (-5° to +5°)
-            const wiggle = (Math.random() * 10 - 5);
-            output.style.transform = `rotate(${wiggle}deg)`;
+            // Smooth small wiggle rotation
+            rotation += rotDirection * 0.3; // very slow
+            if (rotation > 5) rotDirection = -1;
+            if (rotation < -5) rotDirection = 1;
+            output.style.transform = `rotate(${rotation}deg)`;
 
             requestAnimationFrame(move);
         }
@@ -104,6 +108,7 @@ entry.addEventListener("keydown", function(e) {
 </script>
 </body>
 </html>
+
 
 
 
