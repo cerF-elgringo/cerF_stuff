@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>cerF Coding Question</title>
+<title>HOSKY GLABDLE</title>
 
-<!-- Include GROBOLD from CDN -->
+<!-- Embedded GROBOLD font from cdnfonts -->
 <link href="https://fonts.cdnfonts.com/css/grobold" rel="stylesheet">
 
 <style>
@@ -13,103 +13,212 @@ html, body {
     padding: 0;
     height: 100%;
     background-color: black;
-    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-    color: #206cd2;
     font-family: 'GROBOLD', sans-serif;
+    color: #206cd2;
+    overflow: hidden;
+    flex-direction: column;
 }
 
-#question {
-    font-size: 36px;
+h1 {
+    font-size: 48px; /* 50% bigger than default ~32px */
     margin-bottom: 20px;
 }
 
-#entry {
-    font-size: 24px;
-    padding: 8px;
+#game-container {
+    display: grid;
+    grid-template-rows: repeat(6, 60px);
+    grid-gap: 10px;
+    margin-bottom: 20px;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    grid-gap: 10px;
+}
+
+.cell {
+    width: 60px;
+    height: 60px;
     border: 2px solid #206cd2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 36px;
+    text-transform: uppercase;
+    color: #206cd2;
     background-color: black;
-    color: #206cd2;
-    margin-bottom: 10px;
 }
 
-#press-enter {
+.green { background-color: #206cd2; color: black; }
+.yellow { background-color: #ffc107; color: black; }
+.gray { background-color: #555; color: black; }
+
+#alphabet {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 420px; /* fits all letters nicely */
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.letter-box {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #206cd2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+    color: #206cd2;
     font-size: 18px;
-    margin-bottom: 30px;
+    user-select: none;
 }
 
-#output {
-    font-size: 160px;
+.poop {
     position: absolute;
-    white-space: nowrap;
-    color: #206cd2;
+    font-size: 30px;
+    user-select: none;
+    pointer-events: none;
+    animation: fall linear;
+}
+@keyframes fall {
+    0% { transform: translateY(-50px); }
+    100% { transform: translateY(110vh); }
 }
 </style>
 </head>
 <body>
-<div id="question">Should cerF learn to code?</div>
-<input id="entry" type="text" placeholder="" />
-<div id="press-enter">Press Enter</div>
-<div id="output"></div>
+
+<h1>GLABDLE</h1>
+<div id="game-container">
+    <div class="row" id="row0"></div>
+    <div class="row" id="row1"></div>
+    <div class="row" id="row2"></div>
+    <div class="row" id="row3"></div>
+    <div class="row" id="row4"></div>
+    <div class="row" id="row5"></div>
+</div>
+
+<div id="alphabet"></div>
 
 <script>
-const entry = document.getElementById("entry");
-const output = document.getElementById("output");
-const question = document.getElementById("question");
-const pressEnter = document.getElementById("press-enter");
+const targetWord = "HOSKY";
+let currentRow = 0;
+let currentCol = 0;
+const usedLetters = {};
 
-entry.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") {
-        question.style.display = "none";
-        entry.style.display = "none";
-        pressEnter.style.display = "none";
-        output.textContent = "PAMP GLABS";
+function createCells(row) {
+    for (let i = 0; i < 5; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        row.appendChild(cell);
+    }
+}
 
-        // Measure text size
-        output.style.left = "0px";
-        output.style.top = "0px";
-        const width = output.offsetWidth;
-        const height = output.offsetHeight;
+for (let i = 0; i < 6; i++) {
+    createCells(document.getElementById(`row${i}`));
+}
 
-        // Start center
-        let x = (window.innerWidth - width) / 2;
-        let y = (window.innerHeight - height) / 2;
-        output.style.left = x + "px";
-        output.style.top = y + "px";
+// Alphabet tracker
+const alphabetContainer = document.getElementById('alphabet');
+const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+for (let l of letters) {
+    const box = document.createElement('div');
+    box.classList.add('letter-box');
+    box.id = `letter-${l}`;
+    box.textContent = l;
+    alphabetContainer.appendChild(box);
+}
 
-        // Random speed
-        let dx = (Math.random() * 10 + 4) * (Math.random() < 0.5 ? 1 : -1);
-        let dy = (Math.random() * 10 + 4) * (Math.random() < 0.5 ? 1 : -1);
+function updateAlphabet(letter, state) {
+    const box = document.getElementById(`letter-${letter}`);
+    if (!box) return;
+    if (state === 'green') {
+        box.style.backgroundColor = '#206cd2';
+        box.style.color = 'black';
+    } else if (state === 'yellow') {
+        box.style.backgroundColor = '#ffc107';
+        box.style.color = 'black';
+    } else if (state === 'gray') {
+        box.style.backgroundColor = '#555';
+        box.style.color = 'black';
+    }
+}
 
-        let rotation = 0;
-        let rotDirection = Math.random() < 0.5 ? 1 : -1;
-
-        function move() {
-            x += dx;
-            y += dy;
-
-            if (x <= 0 || x + width >= window.innerWidth) dx = -dx;
-            if (y <= 0 || y + height >= window.innerHeight) dy = -dy;
-
-            output.style.left = x + "px";
-            output.style.top = y + "px";
-
-            // Smooth small wiggle rotation
-            rotation += rotDirection * 0.3; // very slow
-            if (rotation > 5) rotDirection = -1;
-            if (rotation < -5) rotDirection = 1;
-            output.style.transform = `rotate(${rotation}deg)`;
-
-            requestAnimationFrame(move);
+// Poop emoji rain
+function startPoopRain(count = 50) {
+    return new Promise(resolve => {
+        let completed = 0;
+        for (let i = 0; i < count; i++) {
+            const poop = document.createElement('div');
+            poop.classList.add('poop');
+            poop.textContent = '💩';
+            poop.style.left = Math.random() * window.innerWidth + 'px';
+            poop.style.animationDuration = 2 + Math.random() * 2 + 's';
+            document.body.appendChild(poop);
+            poop.addEventListener('animationend', () => {
+                poop.remove();
+                completed++;
+                if (completed === count) resolve();
+            });
         }
+    });
+}
 
-        move();
+document.addEventListener('keydown', async function(e) {
+    const row = document.getElementById(`row${currentRow}`);
+    const cells = row.querySelectorAll('.cell');
+
+    if (e.key === 'Backspace') {
+        if (currentCol > 0) {
+            currentCol--;
+            cells[currentCol].textContent = '';
+        }
+    } else if (e.key === 'Enter') {
+        if (currentCol === 5) {
+            let guess = Array.from(cells).map(c => c.textContent).join('');
+            for (let i = 0; i < 5; i++) {
+                const letter = cells[i].textContent.toUpperCase();
+                if (letter === targetWord[i]) {
+                    cells[i].classList.add('green');
+                    usedLetters[letter] = 'green';
+                    updateAlphabet(letter, 'green');
+                } else if (targetWord.includes(letter)) {
+                    cells[i].classList.add('yellow');
+                    if (!usedLetters[letter]) {
+                        usedLetters[letter] = 'yellow';
+                        updateAlphabet(letter, 'yellow');
+                    }
+                } else {
+                    cells[i].classList.add('gray');
+                    usedLetters[letter] = 'gray';
+                    updateAlphabet(letter, 'gray');
+                }
+            }
+            currentRow++;
+            currentCol = 0;
+
+            if (guess === targetWord) {
+                await startPoopRain(80); // poop rain
+                alert("GJ IDJIOT U GOT IT WEN WEN WEN"); // success message immediately after
+            } else if (currentRow >= 6) {
+                alert(`Game over! The word was ${targetWord}.`);
+            }
+        }
+    } else if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+        if (currentCol < 5) {
+            cells[currentCol].textContent = e.key.toUpperCase();
+            currentCol++;
+        }
     }
 });
 </script>
+
 </body>
 </html>
 
