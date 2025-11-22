@@ -1,11 +1,8 @@
-<index.html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>cerF Coding Question</title>
-    <!-- PyScript -->
-    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
     <style>
         html, body {
             margin: 0;
@@ -45,17 +42,22 @@
     <input id="entry" type="text" placeholder="Press Enter" />
     <div id="output"></div>
 
-    <py-script>
-from js import document
+    <script>
+        const entry = document.getElementById("entry");
+        const output = document.getElementById("output");
+        const question = document.getElementById("question");
 
-entry = document.getElementById("entry")
-output = document.getElementById("output")
-question = document.getElementById("question")
+        entry.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                question.style.display = "none";
+                entry.style.display = "none";
+                output.textContent = "PAMP GLABS";
+            }
+        });
+    </script>
+</body>
+</html>
 
-def show_pamp(event):
-    question.style.display = "none"
-    entry.style.display = "none"
-    output.innerHTML = "PAMP GLABS"
 
 entry.addEventListener("keydown", lambda e: show_pamp(e) if e.key == "Enter" else None)
     </py-script>
