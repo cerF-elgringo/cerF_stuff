@@ -9,13 +9,13 @@
             padding: 0;
             height: 100%;
             background-color: black;
+            overflow: hidden; /* keep text inside viewport */
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
             color: #206cd2; /* Hosky Blue */
             font-family: "GROBOLD", sans-serif;
-            overflow: hidden; /* keep "PAMP GLABS" inside viewport */
         }
 
         #question {
@@ -38,23 +38,12 @@
         }
 
         #output {
-            font-size: 120px;
+            font-size: 160px; /* bigger */
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-        }
-
-        @keyframes dance {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            25% { transform: translate(-40%, -60%) rotate(15deg); }
-            50% { transform: translate(-60%, -40%) rotate(-15deg); }
-            75% { transform: translate(-50%, -50%) rotate(10deg); }
-            100% { transform: translate(-50%, -50%) rotate(0deg); }
-        }
-
-        .dance {
-            animation: dance 1s infinite alternate;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -70,16 +59,38 @@
         const question = document.getElementById("question");
         const pressEnter = document.getElementById("press-enter");
 
+        function getRandomPosition() {
+            const maxX = window.innerWidth - output.offsetWidth;
+            const maxY = window.innerHeight - output.offsetHeight;
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+            return {x, y};
+        }
+
+        let moveInterval;
+
         entry.addEventListener("keydown", function(e) {
             if (e.key === "Enter") {
                 question.style.display = "none";
                 entry.style.display = "none";
                 pressEnter.style.display = "none";
                 output.textContent = "PAMP GLABS";
-                output.classList.add("dance"); // start dancing
+
+                // random movement every 300ms
+                moveInterval = setInterval(() => {
+                    const pos = getRandomPosition();
+                    output.style.left = pos.x + "px";
+                    output.style.top = pos.y + "px";
+                }, 300);
             }
+        });
+
+        // Optional: stop movement if needed
+        window.addEventListener("resize", () => {
+            if (moveInterval) clearInterval(moveInterval);
         });
     </script>
 </body>
 </html>
+
 
