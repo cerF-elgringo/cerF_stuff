@@ -9,12 +9,12 @@
             padding: 0;
             height: 100%;
             background-color: black;
-            overflow: hidden; /* keep text inside viewport */
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            color: #206cd2; /* Hosky Blue */
+            color: #206cd2;
             font-family: "GROBOLD", sans-serif;
         }
 
@@ -38,7 +38,7 @@
         }
 
         #output {
-            font-size: 160px; /* bigger */
+            font-size: 160px;
             position: absolute;
             top: 50%;
             left: 50%;
@@ -76,7 +76,7 @@
                 pressEnter.style.display = "none";
                 output.textContent = "PAMP GLABS";
 
-                // random movement every 300ms
+                // Move inside the visible screen only
                 moveInterval = setInterval(() => {
                     const pos = getRandomPosition();
                     output.style.left = pos.x + "px";
@@ -85,7 +85,6 @@
             }
         });
 
-        // Optional: stop movement if needed
         window.addEventListener("resize", () => {
             if (moveInterval) clearInterval(moveInterval);
         });
