@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>cerF Coding Question</title>
+    <!-- PyScript -->
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: #206cd2; /* Hosky Blue */
+            font-family: "GROBOLD", sans-serif;
+        }
+
+        #question {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        #entry {
+            font-size: 24px;
+            padding: 8px;
+            border: 2px solid #206cd2;
+            background-color: black;
+            color: #206cd2;
+        }
+
+        #output {
+            font-size: 120px;
+            margin-top: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="question">Should cerF learn to code?</div>
+    <input id="entry" type="text" placeholder="Press Enter" />
+    <div id="output"></div>
+
+    <py-script>
+from js import document
+
+entry = document.getElementById("entry")
+output = document.getElementById("output")
+question = document.getElementById("question")
+
+def show_pamp(event):
+    question.style.display = "none"
+    entry.style.display = "none"
+    output.innerHTML = "PAMP GLABS"
+
+entry.addEventListener("keydown", lambda e: show_pamp(e) if e.key == "Enter" else None)
+    </py-script>
+</body>
+</html>
