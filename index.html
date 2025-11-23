@@ -32,6 +32,23 @@ h1 { font-size:72px; margin-bottom:20px; color:#206cd2; }
 #lose-poo-left { left:20px; } #lose-poo-right { right:20px; }
 .falling-poo { position:absolute; pointer-events:none; user-select:none; animation-name:fall; animation-timing-function:linear; }
 @keyframes fall { 0% { transform: translateY(-200px) rotate(0deg); } 100% { transform: translateY(100vh) rotate(720deg); } }
+
+/* --- MOBILE-FRIENDLY ADJUSTMENTS --- */
+#win-gif-container, #lose-gif-container {
+    width: 90%;
+    max-width: 400px;
+    height: auto;
+    max-height: 60vh;
+}
+
+#win-message, #lose-message {
+    font-size: 10vw;
+}
+
+@media(max-height:600px) {
+    #win-gif-container, #lose-gif-container { top:45%; }
+    #win-message, #lose-message { top:48%; }
+}
 </style>
 </head>
 <body>
@@ -123,11 +140,11 @@ async function handleKey(key){
                 setBlur(true);
                 showGif('win-gif-container',winningGifs);
                 startPoopRain(80);
-                setTimeout(()=>{ window.location.href="https://hosky.io"; },2800);
+                setTimeout(()=>{ window.location.href="https://hosky.io"; },4500);
             } else if(currentRow===5){
                 setBlur(true);
                 showGif('lose-gif-container',losingGifs);
-                setTimeout(()=>{ window.location.href="https://hosky.io"; },2800);
+                setTimeout(()=>{ window.location.href="https://hosky.io"; },4500);
             }
 
             currentRow++; currentCol=0; updateActiveCell();
@@ -143,10 +160,3 @@ updateActiveCell();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
