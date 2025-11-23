@@ -187,6 +187,11 @@ h1 {
         font-size: 14px;
     }
 
+    #win-gif-container, #lose-gif-container {
+        width: 90vw;
+        max-width: 90vw;
+    }
+
     #win-message, #lose-message {
         font-size: 32px;
     }
@@ -195,22 +200,45 @@ h1 {
         font-size: 100px;
         top: 5px;
     }
-
-    /* Red "1" marker for mobile only */
-    #mobile-version-marker {
-        display: block;
-        position: fixed;
-        top: 5px;
-        right: 5px;
-        font-size: 24px;
-        color: red;
-        z-index: 11000;
-        pointer-events: none;
-    }
 }
 
-/* Hide marker on desktop */
-#mobile-version-marker { display: none; }
+/* --- EXTRA SMALL PHONES (320px - 360px) --- */
+@media (max-width: 360px) {
+    #game-container {
+        grid-template-rows: repeat(6, 35px);
+        grid-gap: 4px;
+    }
+
+    .row {
+        grid-template-columns: repeat(5, 35px);
+        grid-gap: 4px;
+    }
+
+    .cell {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+    }
+
+    #alphabet {
+        gap: 2px;
+    }
+
+    .letter-box {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+    }
+
+    #win-message, #lose-message {
+        font-size: 28px;
+    }
+
+    .lose-poo {
+        font-size: 80px;
+        top: 5px;
+    }
+}
 </style>
 </head>
 <body>
@@ -234,9 +262,6 @@ h1 {
 </div>
 
 <input type="text" id="mobile-input" maxlength="5" />
-
-<!-- Mobile version marker -->
-<div id="mobile-version-marker">1</div>
 
 <div id="win-gif-container"></div>
 
@@ -385,9 +410,7 @@ async function handleKey(key){
                     document.getElementById('win-message').style.display='block';
                     setTimeout(()=>setBlur(false),2000);
                 },2800);
-
                 setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
-
             } else if(currentRow===5){
                 setBlur(true);
                 fadeIn(document.getElementById('lose-gif-container'));
@@ -399,7 +422,6 @@ async function handleKey(key){
                     startLosePoopRain(40);
                     setTimeout(()=>setBlur(false),2000);
                 },2800);
-
                 setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
             }
 
@@ -410,31 +432,19 @@ async function handleKey(key){
     }
 }
 
-// --- MOBILE INPUT FIX ---
+// --- FIXED MOBILE INPUT ---
 const mobileInput = document.getElementById('mobile-input');
-let handlingMobileKey = false;
+if(window.innerWidth <= 500){
+    mobileInput.addEventListener('input', e=>{
+        const value = e.target.value.toUpperCase();
+        if(value.length>0){
+            handleKey(value[value.length-1]);
+            mobileInput.value = '';
+        }
+    });
+}
 
-mobileInput.addEventListener('input', () => {
-    if (handlingMobileKey) return;
-    handlingMobileKey = true;
-
-    const value = mobileInput.value.toUpperCase();
-    if (value.length > 0) {
-        handleKey(value[value.length - 1]);
-        mobileInput.value = '';
-    }
-
-    setTimeout(() => { handlingMobileKey = false; }, 50);
-});
-
-mobileInput.addEventListener('keydown', e => {
-    if (handlingMobileKey) return;
-    handlingMobileKey = true;
-
-    handleKey(e.key);
-    setTimeout(() => { mobileInput.value = ''; handlingMobileKey = false; }, 50);
-});
-
+// Desktop uses normal keydown
 document.addEventListener('keydown', e=>handleKey(e.key));
 
 updateActiveCell();
