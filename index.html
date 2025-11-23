@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -39,7 +39,7 @@ h1 {
     font-size: 72px; 
     margin-bottom: 20px; 
     color: #206cd2;
-    text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; /* green glow */
+    text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
 }
 
 #game-container { display: grid; grid-template-rows: repeat(6, 60px); grid-gap: 10px; margin-bottom: 20px; }
@@ -49,6 +49,11 @@ h1 {
 .green { background-color: #206cd2; color: black; }
 .yellow { background-color: #ffc107; color: black; }
 .gray { background-color: #555; color: black; }
+.cell.locked {
+    pointer-events: none;
+    opacity: 0.6;
+    user-select: none;
+}
 
 #alphabet { display: flex; flex-wrap: wrap; max-width: 420px; justify-content: center; gap: 5px; margin-top: 10px; }
 .letter-box { width: 30px; height: 30px; border: 1px solid #206cd2; display: flex; justify-content: center; align-items: center; text-transform: uppercase; color: #206cd2; font-size: 18px; user-select: none; }
@@ -64,7 +69,7 @@ h1 {
     left:50%; 
     transform: translate(-50%, -50%); 
     font-size: 84px; 
-    line-height: 1.1;  /* added to prevent clipping */
+    line-height: 1.1;
     text-align:center; 
     z-index:9998; 
     background: linear-gradient(90deg, #206cd2, #1a0033); 
@@ -72,8 +77,8 @@ h1 {
     -webkit-background-clip: text; 
     -webkit-text-fill-color: transparent; 
     animation: gradientMove 0.8s linear infinite alternate; 
-    filter: drop-shadow(0 0 6px #ff69b4) drop-shadow(0 0 12px #ff69b4); /* subtle pink glow */
-    overflow: visible;  /* added to prevent clipping */
+    filter: drop-shadow(0 0 6px #ff69b4) drop-shadow(0 0 12px #ff69b4);
+    overflow: visible;
 }
 
 @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 150% 50%; } 100% { background-position: 300% 50%; } }
@@ -91,7 +96,7 @@ h1 {
     .cell { width: 40px; height: 40px; font-size: 24px; }
     #alphabet { gap: 3px; }
     .letter-box { width: 25px; height: 25px; font-size: 14px; }
-    #win-message, #lose-message { font-size: 32px; top:48%; } /* adjusted top for mobile */
+    #win-message, #lose-message { font-size: 32px; top:48%; }
     .lose-poo { font-size: 100px; top: 5px; }
 }
 
@@ -136,11 +141,7 @@ h1 {
 <input type="text" id="mobile-input" maxlength="5" />
 
 <div id="win-gif-container"></div>
-<div id="lose-gif-container">
-  <div class="tenor-gif-embed" data-postid="6289320449545116130" data-share-method="host" data-aspect-ratio="1.32447" data-width="100%">
-    <a href="https://tenor.com/view/stressed-stressed-out-im-stressed-gif-6289320449545116130">Stressed GIF</a>
-  </div>
-</div>
+<div id="lose-gif-container"></div>
 
 <div id="win-message">GOOD JOB IDJIOT</div>
 <div id="lose-message">Try again, idjiot</div>
@@ -150,28 +151,28 @@ h1 {
 <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
 
 <script>
-// --- Profanity filter ---
+// --- ORIGINAL SCRIPT START ---
+
 const profaneWords = ["fuck","shit","bitch","bastard","dick","cunt","asshole","nigger","faggot","slut","whore","cock","pussy","douche"];
-function checkProfanity(word){
-    const lower = word.toLowerCase();
-    return profaneWords.some(p => lower.includes(p));
-}
+function checkProfanity(word){return profaneWords.some(p=>word.toLowerCase().includes(p));}
 
 const targetWord = "HOSKY";
 let currentRow = 0;
 let currentCol = 0;
+let gameOver = false;
 const extraWords = ["HOSKY","GLABS"];
+const triggerWords = ["SAYOS","VEGAS","JINXY","CERFY","GLABS"];
 const gameWrapper = document.getElementById('game-wrapper');
-const winningGifs = ["4540374823853696704","24111898","24123953","10534076","7551288617603856546"]; // removed 25514478
+const winningGifs = ["4540374823853696704","24111898","24123953","10534076","7551288617603856546"];
 
 // --- CREATE CELLS ---
-function createCells(row, rowIndex){
+function createCells(row,rowIndex){
     for(let i=0;i<5;i++){
         const cell = document.createElement('div');
         cell.classList.add('cell');
         row.appendChild(cell);
         cell.addEventListener('click', ()=>{
-            if(rowIndex===currentRow){
+            if(rowIndex===currentRow && !gameOver){
                 currentCol=i;
                 updateActiveCell();
                 if(window.innerWidth <= 500) document.getElementById('mobile-input').focus();
@@ -200,8 +201,7 @@ function updateActiveCell(){
     if(currentCol<5) cells[currentCol].classList.add('active');
 
     if(window.innerWidth <= 500){
-        const rowElement = document.getElementById(`row${currentRow}`);
-        setTimeout(()=>{ rowElement.scrollIntoView({behavior:'smooth', block:'center'}); }, 50);
+        setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);
     }
 }
 function startPoopRain(count=50){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-100)+'px';poop.style.fontSize=(80+Math.random()*120)+'px';poop.style.animationDuration=(5+Math.random()*5)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
@@ -209,144 +209,188 @@ function startLosePoopRain(count=30){for(let i=0;i<count;i++){const poop=documen
 function setBlur(enable){gameWrapper.style.filter=enable?'blur(5px)':'none';}
 function fadeIn(el){el.style.display='block';requestAnimationFrame(()=>el.style.opacity='1');}
 function fadeOut(el){el.style.opacity='0';setTimeout(()=>el.style.display='none',1000);}
-async function isValidWord(word){word=word.toLowerCase();if(extraWords.includes(word.toUpperCase())) return true;try{const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);return res.ok;}catch(e){return false;}}
-function handleBackspace(cells){if(cells[currentCol].textContent==="" && currentCol>0) currentCol--;cells[currentCol].textContent="";updateActiveCell();if(window.innerWidth<=500) setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);}
-function clearCurrentRow(){const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell'); cells.forEach(c=>c.textContent=""); currentCol=0; updateActiveCell(); }
-function showWinningGif(){const gifContainer=document.getElementById('win-gif-container');const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];gifContainer.innerHTML="";const embedDiv=document.createElement("div");embedDiv.className="tenor-gif-embed";embedDiv.setAttribute("data-postid",randomId);embedDiv.setAttribute("data-share-method","host");embedDiv.setAttribute("data-aspect-ratio","1");embedDiv.setAttribute("data-width","100%");gifContainer.appendChild(embedDiv);const script=document.createElement("script");script.type="text/javascript";script.async=true;script.src="https://tenor.com/embed.js";gifContainer.appendChild(script);fadeIn(gifContainer);}
+
+async function isValidWord(word){word=word.toLowerCase();if(extraWords.includes(word.toUpperCase())) return true; try{const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);return res.ok;}catch(e){return false;}}
+
+// --- SESSION STORAGE ---
+function saveGameState(){if(gameOver) return; const state={currentRow,currentCol,board:[]};for(let r=0;r<6;r++){const cells=document.getElementById(`row${r}`).querySelectorAll('.cell');state.board.push(Array.from(cells).map(c=>c.textContent));}sessionStorage.setItem('glabble_state',JSON.stringify(state));}
+function loadGameState(){
+    const state = JSON.parse(sessionStorage.getItem('glabble_state'));
+    if(!state) return;
+
+    currentRow = state.currentRow;
+    currentCol = state.currentCol;
+    gameOver = state.gameOver || false;  // Restore gameOver flag
+
+    for(let r=0;r<6;r++){
+        const cells = document.getElementById(`row${r}`).querySelectorAll('.cell');
+        cells.forEach((c,i)=>c.textContent = state.board[r][i]);
+
+        // If game is over, lock the cells visually
+        if(gameOver) cells.forEach(c => c.classList.add('locked'));
+    }
+
+    updateActiveCell();
+
+    // Blur input if game is over
+    if(gameOver) mobileInput.blur();
+}
 
 // --- MOBILE + DESKTOP INPUT ---
 const mobileInput=document.getElementById('mobile-input');
-mobileInput.addEventListener('input',e=>{const value=e.target.value.toUpperCase();if(value.length>0){if(value==="\b"){const row=document.getElementById(`row${currentRow}`);handleBackspace(row.querySelectorAll('.cell'));}else handleKey(value[value.length-1]);mobileInput.value='';}});
-
+mobileInput.addEventListener('input',e=>{const value=e.target.value.toUpperCase();if(value.length>0){handleKey(value[value.length-1]);mobileInput.value='';}});
 document.addEventListener('keydown',e=>handleKey(e.key));
 if(window.innerWidth<=500){window.addEventListener('load',()=>{mobileInput.focus(); setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);});}
 
 // --- TOTAL GAMES COUNTER ---
-let totalGames = parseInt(localStorage.getItem('glabble_totalGames')||'0');
-document.getElementById('games-count').textContent = totalGames;
+let totalGames=parseInt(localStorage.getItem('glabble_totalGames')||'0');
+document.getElementById('games-count').textContent=totalGames;
 
-// --- HANDLE KEYS WITH SAYOS, VEGAS, AND PROFANITY ---
+// --- BACK/FORWARD & REFRESH HANDLING ---
+window.addEventListener('pageshow', e=>{if(performance.navigation.type!==1){loadGameState();}});
+window.addEventListener('beforeunload', e=>{if(performance.navigation.type===1){sessionStorage.removeItem('glabble_state');}});
+
+// --- HANDLE KEYS ---
 async function handleKey(key){
+    if(gameOver) return;
     const row = document.getElementById(`row${currentRow}`);
     const cells = row.querySelectorAll('.cell');
 
-    if(key==='Backspace'){ handleBackspace(cells); } 
-    else if(key==='Enter'){
-        if(Array.from(cells).every(c => c.textContent!=="")){
+    if(key==='Backspace'){
+        if(cells[currentCol].textContent===""){if(currentCol>0) currentCol--;cells[currentCol].textContent="";}else{cells[currentCol].textContent="";}
+        updateActiveCell(); saveGameState(); return;
+    }
+    if(key==='Enter'){
+        if(Array.from(cells).every(c=>c.textContent!=="")){
             const guess=Array.from(cells).map(c=>c.textContent).join('').toUpperCase();
-
-            if(guess==="SAYOS"){ 
-                const sayosLinks = [
-                    "https://en.wikipedia.org/wiki/Burbot",
-                    "https://www.mazda.com/en/",
-                    "https://www.youtube.com/watch?v=K1fyza5BN-0",
-                    "https://www.hkmaps.hk/viewer.html",
-                    "https://www.youtube.com/watch?v=YJFNdIJnrHY",
-                    "https://www.spanishdict.com/translate/sayos"
-                ];
-                window.location.href = sayosLinks[Math.floor(Math.random()*sayosLinks.length)];
-                return;
-            }
-            if(guess==="VEGAS"){ 
-                const vegasLinks = [
-                    "https://x.com/HoskyDevVegas/status/1947043091216494826",
-                    "https://www.dreamvacations.com/vacation/destinations/all",
-                    "https://www.youtube.com/watch?v=1DUaR0zBGgQ",
-                    "https://www.christinascucina.com/beans-on-toast-the-proper-british-way-recipe-by-a-brit/",
-                    "https://www.urbandictionary.com/define.php?term=foo-foo%20drink"
-                ];
-                window.location.href = vegasLinks[Math.floor(Math.random()*vegasLinks.length)];
-                return;
-            }
-            if(guess==="JINXY"){ 
-                const jinxyLinks = [
-                    "https://en.wikipedia.org/wiki/Flat_bean",
-                    "https://www.reddit.com/r/Netherlands/comments/1ghutfw/what_are_some_crucial_traditional_dutch/",
-                    "https://www.thedutchtable.com/2010/10/bitterballen-dutch-deep-fried-gravy.html"
-                ];
-                window.location.href = jinxyLinks[Math.floor(Math.random()*jinxyLinks.length)];
-                return;
-            }
-            if(guess==="CERFY"){ 
-                const cerfyLinks = [
-                    "https://www.youtube.com/watch?v=aBquLj4kLxQ",
-                    "https://www.youtube.com/watch?v=4npQAvzrND0",
-                    "https://www.imdb.com/title/tt1990216/",
-                    "https://www.youtube.com/watch?v=_ngkB44qaQw"
-                ];
-                window.location.href = cerfyLinks[Math.floor(Math.random()*cerfyLinks.length)];
-                return;
-            }
-            if(guess==="GLABS"){ 
-                window.location.href = "https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19";
-                return;
-            }
-            if(checkProfanity(guess)){ window.location.href="https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/"; return; }
-
-            totalGames++; localStorage.setItem('glabble_totalGames', totalGames);
-            document.getElementById('games-count').textContent=totalGames;
-
-            if(!(await isValidWord(guess))){
-                alert("THAT AIN'T NO REAL WERD, IDJIOT!");
-                clearCurrentRow(); // <-- automatically clears invalid guess
-                return; 
-            }
-
-            for(let i=0;i<5;i++){const letter=cells[i].textContent.toUpperCase();if(letter===targetWord[i]){cells[i].classList.add('green');updateAlphabet(letter,'green');}else if(targetWord.includes(letter)){cells[i].classList.add('yellow');updateAlphabet(letter,'yellow');}else{cells[i].classList.add('gray');updateAlphabet(letter,'gray');} }
-            
-            if(guess===targetWord){
-                setBlur(true);
-                showWinningGif();
-                startPoopRain(80);
-                setTimeout(()=>{
-                    fadeOut(document.getElementById('win-gif-container'));
-                    document.getElementById('win-message').style.display='block';
-                }, 4000);
-                setTimeout(()=>{ window.location.href="https://hosky.io"; }, 8000);
-            }
-            else if(currentRow===5){
-                setBlur(true);
-                const loseGifs = [
-                    "6289320449545116130", // Stressed
-                    "24576363", // Mad Super
-                    "5408039",  // Noob
-                    "1639610178022128587", // Ffs Baby
-                    "1514012758219765433"  // Chip Nxk
-                ];
-                const gifContainer=document.getElementById('lose-gif-container');
-                const randomId=loseGifs[Math.floor(Math.random()*loseGifs.length)];
-                gifContainer.innerHTML="";
-                const embedDiv=document.createElement("div");
-                embedDiv.className="tenor-gif-embed";
-                embedDiv.setAttribute("data-postid",randomId);
-                embedDiv.setAttribute("data-share-method","host");
-                embedDiv.setAttribute("data-aspect-ratio","1");
-                embedDiv.setAttribute("data-width","100%");
-                gifContainer.appendChild(embedDiv);
-                const script=document.createElement("script");
-                script.type="text/javascript";
-                script.async=true;
-                script.src="https://tenor.com/embed.js";
-                gifContainer.appendChild(script);
-                fadeIn(gifContainer);
-
-                setTimeout(()=>{
-                    fadeOut(gifContainer);
-                    document.getElementById('lose-message').style.display='block';
-                }, 4000);
-                document.getElementById('lose-poo-left').style.display='block';
-                document.getElementById('lose-poo-right').style.display='block';
-                startLosePoopRain(40);
-                setTimeout(()=>{ window.location.href="https://hosky.io"; }, 8000);
-            }
-
-            currentRow++; currentCol=0; updateActiveCell();
+            await processGuess(guess);
         }
-    } 
-    else if(/^[a-zA-Z]$/.test(key)){if(currentCol<5){cells[currentCol].textContent=key.toUpperCase();if(currentCol<4) currentCol++;updateActiveCell();}}
+        return;
+    }
+    if(/^[a-zA-Z]$/.test(key)){
+        if(currentCol<5){cells[currentCol].textContent=key.toUpperCase();if(currentCol<4) currentCol++; updateActiveCell(); saveGameState();}
+    }
+}
+
+// --- PROCESS GUESS ---
+async function processGuess(guess){
+    const row=document.getElementById(`row${currentRow}`);
+    const cells=row.querySelectorAll('.cell');
+
+    // --- PROFANITY CHECK ---
+ if(checkProfanity(guess)){
+    // Fill the row with the profane word
+    for(let i=0;i<5;i++){cells[i].textContent=guess[i]||'';}
+    
+    // Treat as a valid guess: move to next row and save state
+    currentRow++; 
+    currentCol=0; 
+    updateActiveCell(); 
+    saveGameState();
+    
+    // Redirect after filling the row
+    window.location.href = "https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/";
+    return;
+    }
+
+    // Fill letters
+    for(let i=0;i<5;i++){cells[i].textContent=guess[i]||'';}
+    saveGameState();
+
+    const redirects={
+        "SAYOS":["https://en.wikipedia.org/wiki/Burbot","https://www.mazda.com/en/","https://www.youtube.com/watch?v=K1fyza5BN-0","https://www.hkmaps.hk/viewer.html","https://www.youtube.com/watch?v=YJFNdIJnrHY","https://www.spanishdict.com/translate/sayos"],
+        "VEGAS":["https://x.com/HoskyDevVegas/status/1947043091216494826","https://www.dreamvacations.com/vacation/destinations/all","https://www.youtube.com/watch?v=1DUaR0zBGgQ","https://www.christinascucina.com/beans-on-toast-the-proper-british-way-recipe-by-a-brit/","https://www.urbandictionary.com/define.php?term=foo-foo%20drink"],
+        "JINXY":["https://en.wikipedia.org/wiki/Flat_bean","https://www.reddit.com/r/Netherlands/comments/1ghutfw/what_are_some_crucial_traditional_dutch/","https://www.thedutchtable.com/2010/10/bitterballen-dutch-deep-fried-gravy.html"],
+        "CERFY":["https://www.youtube.com/watch?v=aBquLj4kLxQ","https://www.youtube.com/watch?v=4npQAvzrND0","https://www.imdb.com/title/tt1990216/","https://www.youtube.com/watch?v=_ngkB44qaQw"],
+        "GLABS":["https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19"]
+    };
+
+    if(triggerWords.includes(guess)){
+        currentRow++; currentCol=0; updateActiveCell(); saveGameState();
+        const links = redirects[guess];
+        window.location.href = links[Math.floor(Math.random()*links.length)];
+        return;
+    }
+
+    // Check letters for normal word
+    for(let i=0;i<5;i++){
+        const letter=cells[i].textContent;
+        if(letter===targetWord[i]){cells[i].classList.add('green'); updateAlphabet(letter,'green');}
+        else if(targetWord.includes(letter)){cells[i].classList.add('yellow'); updateAlphabet(letter,'yellow');}
+        else{cells[i].classList.add('gray'); updateAlphabet(letter,'gray');}
+    }
+
+    // WINNING
+    if(guess===targetWord){
+    gameOver = true;                // Lock the game
+    setBlur(true); 
+    mobileInput.blur();
+
+    // Save gameOver state so back button preserves the lock
+    const state = { currentRow, currentCol, board: [], gameOver };
+    for(let r=0;r<6;r++){
+        const cells = document.getElementById(`row${r}`).querySelectorAll('.cell');
+        state.board.push(Array.from(cells).map(c=>c.textContent));
+    }
+    sessionStorage.setItem('glabble_state', JSON.stringify(state));
+
+    showWinningGif();
+    startPoopRain(80);
+    setTimeout(()=>{
+        fadeOut(document.getElementById('win-gif-container')); 
+        document.getElementById('win-message').style.display='block';
+    },4000);
+    setTimeout(()=>{window.location.href="https://hosky.io";},8000);
+    return;
+    }
+
+    // LOSING
+    if(currentRow===5){
+        gameOver=true;
+        setBlur(true); mobileInput.blur();
+        const loseGifs=["6289320449545116130","24576363","5408039","1639610178022128587","1514012758219765433"];
+        const gifContainer=document.getElementById('lose-gif-container');
+        const randomId=loseGifs[Math.floor(Math.random()*loseGifs.length)];
+        gifContainer.innerHTML="";
+        const embedDiv=document.createElement("div");
+        embedDiv.className="tenor-gif-embed";
+        embedDiv.setAttribute("data-postid",randomId);
+        embedDiv.setAttribute("data-share-method","host");
+        embedDiv.setAttribute("data-aspect-ratio","1");
+        embedDiv.setAttribute("data-width","100%");
+        gifContainer.appendChild(embedDiv);
+        const script=document.createElement("script"); script.type="text/javascript"; script.async=true; script.src="https://tenor.com/embed.js"; gifContainer.appendChild(script);
+        fadeIn(gifContainer);
+        setTimeout(()=>{ fadeOut(gifContainer); document.getElementById('lose-message').style.display='block';},4000);
+        document.getElementById('lose-poo-left').style.display='block';
+        document.getElementById('lose-poo-right').style.display='block';
+        startLosePoopRain(40);
+        setTimeout(()=>{window.location.href="https://hosky.io";},8000);
+        return;
+    }
+
+    currentRow++; currentCol=0; updateActiveCell(); saveGameState();
+}
+
+// --- SHOW WIN GIF ---
+function showWinningGif(){
+    const gifContainer=document.getElementById('win-gif-container');
+    const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];
+    gifContainer.innerHTML="";
+    const embedDiv=document.createElement("div");
+    embedDiv.className="tenor-gif-embed";
+    embedDiv.setAttribute("data-postid",randomId);
+    embedDiv.setAttribute("data-share-method","host");
+    embedDiv.setAttribute("data-aspect-ratio","1");
+    embedDiv.setAttribute("data-width","100%");
+    gifContainer.appendChild(embedDiv);
+    const script=document.createElement("script"); script.type="text/javascript"; script.async=true; script.src="https://tenor.com/embed.js"; gifContainer.appendChild(script);
+    fadeIn(gifContainer);
 }
 
 updateActiveCell();
+
+// --- ORIGINAL SCRIPT END ---
 </script>
 </body>
 </html>
