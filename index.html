@@ -67,9 +67,13 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2; }
     #win-message, #lose-message { font-size: 32px; }
     .lose-poo { font-size: 100px; top: 5px; }
 
-    /* --- Mobile-only tiled background --- */
-    html, body {
-        background-image: url('https://hosky.io/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FHosky_1200.9361cc3f.png&w=3840&q=85&dpl=dpl_A35He1TJdeTQghKRghvecRxzGvvJ');
+    /* --- Mobile-only tiled background behind game wrapper --- */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 0;
+        background-image: url('https://hosky.io/_next/image?url=%2F_next%2Fstatic%2Fmedia/Hosky_1200.9361cc3f.png&w=3840&q=85&dpl=dpl_A35He1TJdeTQghKRghvecRxzGvvJ');
         background-repeat: repeat;
         background-position: center;
         background-size: auto;
@@ -130,8 +134,8 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2; }
 
 <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
 
+<!-- JS from previous full version remains unchanged -->
 <script>
-// --- Variables ---
 const targetWord = "HOSKY";
 let currentRow = 0;
 let currentCol = 0;
@@ -139,7 +143,6 @@ const extraWords = ["HOSKY","GLABS"];
 const gameWrapper = document.getElementById('game-wrapper');
 const winningGifs = ["4540374823853696704","24111898","24123953","25514478","10534076","7551288617603856546"];
 
-// --- Create cells ---
 function createCells(row, rowIndex){
     for(let i=0;i<5;i++){
         const cell = document.createElement('div');
@@ -157,7 +160,6 @@ function createCells(row, rowIndex){
 }
 for(let i=0;i<6;i++) createCells(document.getElementById(`row${i}`), i);
 
-// --- Alphabet ---
 const alphabetContainer = document.getElementById('alphabet');
 for(let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
     const box=document.createElement('div');
@@ -167,7 +169,6 @@ for(let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
     alphabetContainer.appendChild(box);
 }
 
-// --- Game functions ---
 function updateAlphabet(letter,state){const box=document.getElementById(`letter-${letter}`);if(!box)return;if(state==='green'){box.style.backgroundColor='#206cd2'; box.style.color='black';}else if(state==='yellow'){box.style.backgroundColor='#ffc107'; box.style.color='black';}else{box.style.backgroundColor='#555'; box.style.color='black';}}
 function updateActiveCell(){document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell');if(currentCol<5)cells[currentCol].classList.add('active');}
 function startPoopRain(count=50){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-100)+'px';poop.style.fontSize=(80+Math.random()*120)+'px';poop.style.animationDuration=(5+Math.random()*5)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
@@ -179,17 +180,14 @@ async function isValidWord(word){word=word.toLowerCase();if(extraWords.includes(
 function handleBackspace(cells){if(cells[currentCol].textContent==="" && currentCol>0) currentCol--;cells[currentCol].textContent="";updateActiveCell();if(window.innerWidth<=500) setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);}
 function showWinningGif(){const gifContainer=document.getElementById('win-gif-container');const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];gifContainer.innerHTML="";const embedDiv=document.createElement("div");embedDiv.className="tenor-gif-embed";embedDiv.setAttribute("data-postid",randomId);embedDiv.setAttribute("data-share-method","host");embedDiv.setAttribute("data-aspect-ratio","1");embedDiv.setAttribute("data-width","100%");gifContainer.appendChild(embedDiv);const script=document.createElement("script");script.type="text/javascript";script.async=true;script.src="https://tenor.com/embed.js";gifContainer.appendChild(script);fadeIn(gifContainer);}
 
-// --- Mobile + desktop input ---
 const mobileInput=document.getElementById('mobile-input');
 mobileInput.addEventListener('input',e=>{const value=e.target.value.toUpperCase();if(value.length>0){if(value==="\b"){const row=document.getElementById(`row${currentRow}`);handleBackspace(row.querySelectorAll('.cell'));}else handleKey(value[value.length-1]);mobileInput.value='';}});
 document.addEventListener('keydown',e=>handleKey(e.key));
 if(window.innerWidth<=500){window.addEventListener('load',()=>{mobileInput.focus(); setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);});}
 
-// --- Total games counter ---
 let totalGames = parseInt(localStorage.getItem('glabble_totalGames')||'0');
 document.getElementById('games-count').textContent = totalGames;
 
-// --- Handle key ---
 async function handleKey(key){
     const row = document.getElementById(`row${currentRow}`);
     const cells = row.querySelectorAll('.cell');
@@ -198,21 +196,13 @@ async function handleKey(key){
     else if(key==='Enter'){
         if(Array.from(cells).every(c => c.textContent!=="")){
             const guess=Array.from(cells).map(c=>c.textContent).join('').toUpperCase();
-
-            // ✅ SAYOS redirect
             if(guess==="SAYOS"){ window.location.href="https://en.wikipedia.org/wiki/Burbot"; return; }
-
-            // increment counter
             totalGames++; localStorage.setItem('glabble_totalGames', totalGames);
             document.getElementById('games-count').textContent=totalGames;
-
             if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return; }
-
             for(let i=0;i<5;i++){const letter=cells[i].textContent.toUpperCase();if(letter===targetWord[i]){cells[i].classList.add('green');updateAlphabet(letter,'green');}else if(targetWord.includes(letter)){cells[i].classList.add('yellow');updateAlphabet(letter,'yellow');}else{cells[i].classList.add('gray');updateAlphabet(letter,'gray');}}
-
             if(guess===targetWord){setBlur(true);showWinningGif();startPoopRain(80);setTimeout(()=>{fadeOut(document.getElementById('win-gif-container'));document.getElementById('win-message').style.display='block';},2800);setTimeout(()=>{window.location.href="https://hosky.io";},8000);}
             else if(currentRow===5){setBlur(true);fadeIn(document.getElementById('lose-gif-container'));setTimeout(()=>{fadeOut(document.getElementById('lose-gif-container'));document.getElementById('lose-message').style.display='block';document.getElementById('lose-poo-left').style.display='block';document.getElementById('lose-poo-right').style.display='block';startLosePoopRain(40);},2800);setTimeout(()=>{window.location.href="https://hosky.io";},8000);}
-
             currentRow++; currentCol=0; updateActiveCell();
         }
     } 
