@@ -99,15 +99,6 @@ h1 {
     height: 1px;
 }
 
-#red-marker {
-    position: fixed;
-    top: 5px;
-    right: 5px;
-    color: red;
-    font-size: 24px;
-    z-index: 10001;
-}
-
 #win-gif-container, #lose-gif-container {
     display: none;
     opacity: 0;
@@ -252,8 +243,6 @@ h1 {
 </head>
 <body>
 
-<div id="red-marker">1</div>
-
 <div id="game-wrapper">
     <div id="lose-poo-left" class="lose-poo">💩</div>
     <div id="lose-poo-right" class="lose-poo">💩</div>
@@ -275,6 +264,7 @@ h1 {
 <input type="text" id="mobile-input" maxlength="5" />
 
 <div id="win-gif-container"></div>
+
 <div id="lose-gif-container">
   <div class="tenor-gif-embed" data-postid="6289320449545116130" data-share-method="host" data-aspect-ratio="1.32447" data-width="100%">
     <a href="https://tenor.com/view/stressed-stressed-out-im-stressed-gif-6289320449545116130">Stressed GIF</a> from <a href="https://tenor.com/search/stressed-gifs">Stressed GIFs</a>
@@ -308,11 +298,7 @@ function createCells(row, rowIndex) {
         cell.classList.add('cell');
         row.appendChild(cell);
         cell.addEventListener('click', () => {
-            if (rowIndex === currentRow) {
-                currentCol = i; 
-                updateActiveCell();
-                document.getElementById('mobile-input').focus();
-            }
+            if (rowIndex === currentRow) document.getElementById('mobile-input').focus();
         });
     }
 }
@@ -435,7 +421,7 @@ async function handleKey(key){
     }
 }
 
-// --- MOBILE INPUT FIX WITHOUT TOUCHING DESKTOP ---
+// --- FIXED MOBILE INPUT ---
 const mobileInput = document.getElementById('mobile-input');
 if(window.innerWidth <= 500){
     mobileInput.addEventListener('input', e=>{
@@ -447,7 +433,7 @@ if(window.innerWidth <= 500){
     });
 }
 
-// Desktop keyboard remains unchanged
+// Desktop uses normal keydown
 document.addEventListener('keydown', e=>handleKey(e.key));
 
 updateActiveCell();
