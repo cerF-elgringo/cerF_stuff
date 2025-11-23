@@ -159,86 +159,29 @@ h1 {
     100% { transform: translateY(100vh) rotate(720deg); }
 }
 
-/* --- MOBILE-SPECIFIC OVERRIDES --- */
+/* --- MOBILE OVERRIDES --- */
 @media (max-width: 500px) {
-    #game-container {
-        grid-template-rows: repeat(6, 40px);
-        grid-gap: 5px;
-    }
-
-    .row {
-        grid-template-columns: repeat(5, 40px);
-        grid-gap: 5px;
-    }
-
-    .cell {
-        width: 40px;
-        height: 40px;
-        font-size: 24px;
-    }
-
-    #alphabet {
-        gap: 3px;
-    }
-
-    .letter-box {
-        width: 25px;
-        height: 25px;
-        font-size: 14px;
-    }
-
-    #win-gif-container, #lose-gif-container {
-        width: 90vw;
-        max-width: 90vw;
-    }
-
-    #win-message, #lose-message {
-        font-size: 32px;
-    }
-
-    .lose-poo {
-        font-size: 100px;
-        top: 5px;
-    }
+    #game-container { grid-template-rows: repeat(6, 40px); grid-gap: 5px; }
+    .row { grid-template-columns: repeat(5, 40px); grid-gap: 5px; }
+    .cell { width: 40px; height: 40px; font-size: 24px; }
+    #alphabet { gap: 3px; }
+    .letter-box { width: 25px; height: 25px; font-size: 14px; }
+    #win-gif-container, #lose-gif-container { width: 90vw; max-width: 90vw; }
+    #win-message, #lose-message { font-size: 32px; }
+    .lose-poo { font-size: 100px; top: 5px; }
 }
-
-/* --- EXTRA SMALL PHONES (320px - 360px) --- */
 @media (max-width: 360px) {
-    #game-container {
-        grid-template-rows: repeat(6, 35px);
-        grid-gap: 4px;
-    }
-
-    .row {
-        grid-template-columns: repeat(5, 35px);
-        grid-gap: 4px;
-    }
-
-    .cell {
-        width: 35px;
-        height: 35px;
-        font-size: 20px;
-    }
-
-    #alphabet {
-        gap: 2px;
-    }
-
-    .letter-box {
-        width: 22px;
-        height: 22px;
-        font-size: 12px;
-    }
-
-    #win-message, #lose-message {
-        font-size: 28px;
-    }
-
-    .lose-poo {
-        font-size: 80px;
-        top: 5px;
-    }
+    #game-container { grid-template-rows: repeat(6, 35px); grid-gap: 4px; }
+    .row { grid-template-columns: repeat(5, 35px); grid-gap: 4px; }
+    .cell { width: 35px; height: 35px; font-size: 20px; }
+    #alphabet { gap: 2px; }
+    .letter-box { width: 22px; height: 22px; font-size: 12px; }
+    #win-message, #lose-message { font-size: 28px; }
+    .lose-poo { font-size: 80px; top: 5px; }
 }
+
+/* --- RED 1 in upper-right for testing --- */
+#update-test { position: fixed; top: 0; right: 0; color: red; font-size: 32px; z-index: 99999; }
 </style>
 </head>
 <body>
@@ -262,15 +205,14 @@ h1 {
 </div>
 
 <input type="text" id="mobile-input" maxlength="5" />
+<div id="update-test">1</div>
 
 <div id="win-gif-container"></div>
-
 <div id="lose-gif-container">
   <div class="tenor-gif-embed" data-postid="6289320449545116130" data-share-method="host" data-aspect-ratio="1.32447" data-width="100%">
     <a href="https://tenor.com/view/stressed-stressed-out-im-stressed-gif-6289320449545116130">Stressed GIF</a> from <a href="https://tenor.com/search/stressed-gifs">Stressed GIFs</a>
   </div>
 </div>
-
 <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
 
 <div id="win-message">Good job idjiot, you wen</div>
@@ -282,40 +224,34 @@ let currentRow = 0;
 let currentCol = 0;
 const extraWords = ["HOSKY","GLABS"];
 const gameWrapper = document.getElementById('game-wrapper');
+const winningGifs = ["4540374823853696704","24111898","24123953","25514478","10534076","7551288617603856546"];
 
-const winningGifs = [
-    "4540374823853696704",
-    "24111898",
-    "24123953",
-    "25514478",
-    "10534076",
-    "7551288617603856546"
-];
-
-function createCells(row, rowIndex) {
-    for (let i = 0; i < 5; i++) {
-        const cell = document.createElement('div');
+function createCells(row,rowIndex){
+    for(let i=0;i<5;i++){
+        const cell=document.createElement('div');
         cell.classList.add('cell');
         row.appendChild(cell);
-        cell.addEventListener('click', () => {
-            if (rowIndex === currentRow) document.getElementById('mobile-input').focus();
+        cell.addEventListener('click',()=>{
+            currentRow=rowIndex;
+            currentCol=i;
+            updateActiveCell();
+            document.getElementById('mobile-input').focus();
         });
     }
 }
+for(let i=0;i<6;i++) createCells(document.getElementById(`row${i}`),i);
 
-for (let i = 0; i < 6; i++) createCells(document.getElementById(`row${i}`), i);
-
-const alphabetContainer = document.getElementById('alphabet');
-for (let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
-    const box = document.createElement('div');
+const alphabetContainer=document.getElementById('alphabet');
+for(let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
+    const box=document.createElement('div');
     box.classList.add('letter-box');
-    box.id = `letter-${l}`;
-    box.textContent = l;
+    box.id=`letter-${l}`;
+    box.textContent=l;
     alphabetContainer.appendChild(box);
 }
 
 function updateAlphabet(letter,state){
-    const box = document.getElementById(`letter-${letter}`);
+    const box=document.getElementById(`letter-${letter}`);
     if(!box) return;
     if(state==='green'){box.style.backgroundColor='#206cd2'; box.style.color='black';}
     else if(state==='yellow'){box.style.backgroundColor='#ffc107'; box.style.color='black';}
@@ -323,19 +259,19 @@ function updateAlphabet(letter,state){
 }
 
 function updateActiveCell(){
-    document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
-    const cells = document.getElementById(`row${currentRow}`).querySelectorAll('.cell');
-    if(currentCol < 5) cells[currentCol].classList.add('active');
+    document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));
+    const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell');
+    if(currentCol<5) cells[currentCol].classList.add('active');
 }
 
 function startPoopRain(count=50){
     for(let i=0;i<count;i++){
-        const poop = document.createElement('div');
+        const poop=document.createElement('div');
         poop.classList.add('falling-poo');
-        poop.textContent = '💩';
-        poop.style.left = Math.random()*(window.innerWidth-100)+'px';
-        poop.style.fontSize = (80+Math.random()*120)+'px';
-        poop.style.animationDuration = (5+Math.random()*5)+'s';
+        poop.textContent='💩';
+        poop.style.left=Math.random()*(window.innerWidth-100)+'px';
+        poop.style.fontSize=(80+Math.random()*120)+'px';
+        poop.style.animationDuration=(5+Math.random()*5)+'s';
         document.body.appendChild(poop);
         poop.addEventListener('animationend',()=>poop.remove());
     }
@@ -343,112 +279,88 @@ function startPoopRain(count=50){
 
 function startLosePoopRain(count=30){
     for(let i=0;i<count;i++){
-        const poop = document.createElement('div');
+        const poop=document.createElement('div');
         poop.classList.add('falling-poo');
-        poop.textContent = '💩';
-        poop.style.left = Math.random()*(window.innerWidth-80)+'px';
-        poop.style.fontSize = (60+Math.random()*80)+'px';
-        poop.style.animationDuration = (5+Math.random()*5)+'s';
+        poop.textContent='💩';
+        poop.style.left=Math.random()*(window.innerWidth-80)+'px';
+        poop.style.fontSize=(60+Math.random()*80)+'px';
+        poop.style.animationDuration=(5+Math.random()*5)+'s';
         document.body.appendChild(poop);
         poop.addEventListener('animationend',()=>poop.remove());
     }
 }
 
-function setBlur(enable){gameWrapper.style.filter = enable ? 'blur(5px)' : 'none';}
+function setBlur(enable){gameWrapper.style.filter=enable?'blur(5px)':'none';}
 function fadeIn(el){el.style.display='block'; requestAnimationFrame(()=>el.style.opacity='1');}
 function fadeOut(el){el.style.opacity='0'; setTimeout(()=>el.style.display='none',1000);}
 
 async function isValidWord(word){
-    word = word.toLowerCase();
+    word=word.toLowerCase();
     if(extraWords.includes(word.toUpperCase())) return true;
-    try{ const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`); return res.ok; }catch(e){return false;}
+    try{const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`); return res.ok;}catch(e){return false;}
 }
 
 function showWinningGif(){
-    const gifContainer = document.getElementById('win-gif-container');
-    const randomId = winningGifs[Math.floor(Math.random()*winningGifs.length)];
-    gifContainer.innerHTML = "";
-    const embedDiv = document.createElement("div");
-    embedDiv.className = "tenor-gif-embed";
+    const gifContainer=document.getElementById('win-gif-container');
+    const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];
+    gifContainer.innerHTML="";
+    const embedDiv=document.createElement("div");
+    embedDiv.className="tenor-gif-embed";
     embedDiv.setAttribute("data-postid", randomId);
-    embedDiv.setAttribute("data-share-method", "host");
-    embedDiv.setAttribute("data-aspect-ratio", "1");
-    embedDiv.setAttribute("data-width", "100%");
+    embedDiv.setAttribute("data-share-method","host");
+    embedDiv.setAttribute("data-aspect-ratio","1");
+    embedDiv.setAttribute("data-width","100%");
     gifContainer.appendChild(embedDiv);
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.async = true;
-    script.src = "https://tenor.com/embed.js";
+    const script=document.createElement("script");
+    script.type="text/javascript";
+    script.async=true;
+    script.src="https://tenor.com/embed.js";
     gifContainer.appendChild(script);
     fadeIn(gifContainer);
 }
 
 async function handleKey(key){
-    const row = document.getElementById(`row${currentRow}`);
-    const cells = row.querySelectorAll('.cell');
-
+    const row=document.getElementById(`row${currentRow}`);
+    const cells=row.querySelectorAll('.cell');
     if(key==='Backspace'){
         if(currentCol>0){currentCol--;cells[currentCol].textContent='';updateActiveCell();}
-    } else if(key==='Enter'){
+    }else if(key==='Enter'){
         if(currentCol===5){
-            const guess = Array.from(cells).map(c=>c.textContent).join('');
-            if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return; }
-
+            const guess=Array.from(cells).map(c=>c.textContent).join('');
+            if(!(await isValidWord(guess))){alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return;}
             for(let i=0;i<5;i++){
-                const letter = cells[i].textContent.toUpperCase();
+                const letter=cells[i].textContent.toUpperCase();
                 if(letter===targetWord[i]){cells[i].classList.add('green'); updateAlphabet(letter,'green');}
                 else if(targetWord.includes(letter)){cells[i].classList.add('yellow'); updateAlphabet(letter,'yellow');}
                 else{cells[i].classList.add('gray'); updateAlphabet(letter,'gray');}
             }
-
             if(guess===targetWord){
-                setBlur(true);
-                showWinningGif();
-                startPoopRain(80);
-                setTimeout(()=>{
-                    fadeOut(document.getElementById('win-gif-container'));
-                    document.getElementById('win-message').style.display='block';
-                    setTimeout(()=>setBlur(false),2000);
-                },2800);
-                setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
-            } else if(currentRow===5){
-                setBlur(true);
-                fadeIn(document.getElementById('lose-gif-container'));
-                setTimeout(()=>{
-                    fadeOut(document.getElementById('lose-gif-container'));
-                    document.getElementById('lose-message').style.display='block';
-                    document.getElementById('lose-poo-left').style.display='block';
-                    document.getElementById('lose-poo-right').style.display='block';
-                    startLosePoopRain(40);
-                    setTimeout(()=>setBlur(false),2000);
-                },2800);
-                setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
+                setBlur(true); showWinningGif(); startPoopRain(80);
+                setTimeout(()=>{fadeOut(document.getElementById('win-gif-container')); document.getElementById('win-message').style.display='block'; setTimeout(()=>setBlur(false),2000);},2800);
+                setTimeout(()=>{window.location.href="https://hosky.io";},8000);
+            }else if(currentRow===5){
+                setBlur(true); fadeIn(document.getElementById('lose-gif-container'));
+                setTimeout(()=>{fadeOut(document.getElementById('lose-gif-container')); document.getElementById('lose-message').style.display='block'; document.getElementById('lose-poo-left').style.display='block'; document.getElementById('lose-poo-right').style.display='block'; startLosePoopRain(40); setTimeout(()=>setBlur(false),2000);},2800);
+                setTimeout(()=>{window.location.href="https://hosky.io";},8000);
             }
-
             currentRow++; currentCol=0; updateActiveCell();
         }
-    } else if(/^[a-zA-Z]$/.test(key)){
+    }else if(/^[a-zA-Z]$/.test(key)){
         if(currentCol<5){cells[currentCol].textContent=key.toUpperCase(); currentCol++; updateActiveCell();}
     }
 }
 
-// --- FIXED MOBILE INPUT ---
-const mobileInput = document.getElementById('mobile-input');
-if(window.innerWidth <= 500){
-    mobileInput.addEventListener('input', e=>{
-        const value = e.target.value.toUpperCase();
-        if(value.length>0){
-            handleKey(value[value.length-1]);
-            mobileInput.value = '';
-        }
-    });
-}
+// --- MOBILE INPUT FIX (desktop unchanged) ---
+const mobileInput=document.getElementById('mobile-input');
+mobileInput.addEventListener('input',e=>{
+    const val=e.target.value.toUpperCase();
+    if(val.length>0){ handleKey(val[val.length-1]); mobileInput.value=''; }
+});
 
-// Desktop uses normal keydown
-document.addEventListener('keydown', e=>handleKey(e.key));
+// desktop keydown
+document.addEventListener('keydown',e=>handleKey(e.key));
 
 updateActiveCell();
 </script>
-
 </body>
 </html>
