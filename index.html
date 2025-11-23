@@ -54,6 +54,11 @@ h1 {
     user-select: none;
 }
 
+.cell.active {
+    border-color: #ffc107;
+    box-shadow: 0 0 10px #ffc107;
+}
+
 .green { background-color: #206cd2; color: black; }
 .yellow { background-color: #ffc107; color: black; }
 .gray { background-color: #555; color: black; }
@@ -91,7 +96,6 @@ h1 {
     100% { transform: translateY(110vh); }
 }
 
-/* Hidden input to capture mobile keyboard input */
 #mobile-input {
     position: absolute;
     opacity: 0;
@@ -131,6 +135,7 @@ function createCells(row) {
         // Make cells tappable on mobile
         cell.addEventListener('click', () => {
             document.getElementById('mobile-input').focus();
+            updateActiveCell();
         });
     }
 }
@@ -186,6 +191,16 @@ function startPoopRain(count = 50) {
     });
 }
 
+// Update active cell highlight
+function updateActiveCell() {
+    const row = document.getElementById(`row${currentRow}`);
+    const cells = row.querySelectorAll('.cell');
+    cells.forEach(c => c.classList.remove('active'));
+    if (currentCol < 5) {
+        cells[currentCol].classList.add('active');
+    }
+}
+
 // Handle key input
 function handleKey(key) {
     const row = document.getElementById(`row${currentRow}`);
@@ -195,6 +210,7 @@ function handleKey(key) {
         if (currentCol > 0) {
             currentCol--;
             cells[currentCol].textContent = '';
+            updateActiveCell();
         }
     } else if (key === 'Enter') {
         if (currentCol === 5) {
@@ -216,6 +232,7 @@ function handleKey(key) {
             }
             currentRow++;
             currentCol = 0;
+            updateActiveCell();
             if (guess === targetWord) {
                 startPoopRain(80).then(() => {
                     alert("GJ IDJIOT U GOT IT WEN WEN WEN");
@@ -228,6 +245,7 @@ function handleKey(key) {
         if (currentCol < 5) {
             cells[currentCol].textContent = key.toUpperCase();
             currentCol++;
+            updateActiveCell();
         }
     }
 }
@@ -245,12 +263,16 @@ mobileInput.addEventListener('input', () => {
         cells[i].textContent = value[i] || '';
     }
     currentCol = value.length;
+    updateActiveCell();
 });
 
 mobileInput.addEventListener('keydown', e => {
     handleKey(e.key);
     setTimeout(() => mobileInput.value = '', 0);
 });
+
+// Initialize first active cell
+updateActiveCell();
 </script>
 
 </body>
