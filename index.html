@@ -99,16 +99,6 @@ h1 {
     height: 1px;
 }
 
-#corner-red {
-    position: fixed;
-    top: 5px;
-    right: 10px;
-    font-size: 24px;
-    color: red;
-    z-index: 10001;
-    user-select: none;
-}
-
 #win-gif-container, #lose-gif-container {
     display: none;
     opacity: 0;
@@ -192,8 +182,6 @@ h1 {
 </style>
 </head>
 <body>
-
-<div id="corner-red">1</div>
 
 <div id="game-wrapper">
     <div id="lose-poo-left" class="lose-poo">💩</div>
@@ -408,7 +396,7 @@ const mobileInput = document.getElementById('mobile-input');
 mobileInput.addEventListener('input', e=>{
     const value = e.target.value.toUpperCase();
     if(value.length > 0){
-        if(value === "\b"){ // backspace detection
+        if(value === "\b"){ 
             const row = document.getElementById(`row${currentRow}`);
             handleBackspace(row.querySelectorAll('.cell'));
         } else {
