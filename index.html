@@ -159,94 +159,58 @@ h1 {
     100% { transform: translateY(100vh) rotate(720deg); }
 }
 
-/* --- MOBILE-SPECIFIC OVERRIDES --- */
+/* MOBILE OVERRIDES */
 @media (max-width: 500px) {
     #game-container {
         grid-template-rows: repeat(6, 40px);
         grid-gap: 5px;
     }
-
     .row {
         grid-template-columns: repeat(5, 40px);
         grid-gap: 5px;
     }
-
     .cell {
         width: 40px;
         height: 40px;
         font-size: 24px;
     }
-
-    #alphabet {
-        gap: 3px;
-    }
-
-    .letter-box {
-        width: 25px;
-        height: 25px;
-        font-size: 14px;
-    }
-
-    #win-gif-container, #lose-gif-container {
-        width: 90vw;
-        max-width: 90vw;
-    }
-
-    #win-message, #lose-message {
-        font-size: 32px;
-    }
-
-    .lose-poo {
-        font-size: 100px;
-        top: 5px;
-    }
+    #alphabet { gap: 3px; }
+    .letter-box { width: 25px; height: 25px; font-size: 14px; }
+    #win-gif-container, #lose-gif-container { width: 90vw; max-width: 90vw; }
+    #win-message, #lose-message { font-size: 32px; }
+    .lose-poo { font-size: 100px; top: 5px; }
 }
 
-/* --- EXTRA SMALL PHONES (320px - 360px) --- */
+/* EXTRA SMALL PHONES */
 @media (max-width: 360px) {
-    #game-container {
-        grid-template-rows: repeat(6, 35px);
-        grid-gap: 4px;
-    }
+    #game-container { grid-template-rows: repeat(6, 35px); grid-gap: 4px; }
+    .row { grid-template-columns: repeat(5, 35px); grid-gap: 4px; }
+    .cell { width: 35px; height: 35px; font-size: 20px; }
+    #alphabet { gap: 2px; }
+    .letter-box { width: 22px; height: 22px; font-size: 12px; }
+    #win-message, #lose-message { font-size: 28px; }
+    .lose-poo { font-size: 80px; top: 5px; }
+}
 
-    .row {
-        grid-template-columns: repeat(5, 35px);
-        grid-gap: 4px;
-    }
-
-    .cell {
-        width: 35px;
-        height: 35px;
-        font-size: 20px;
-    }
-
-    #alphabet {
-        gap: 2px;
-    }
-
-    .letter-box {
-        width: 22px;
-        height: 22px;
-        font-size: 12px;
-    }
-
-    #win-message, #lose-message {
-        font-size: 28px;
-    }
-
-    .lose-poo {
-        font-size: 80px;
-        top: 5px;
-    }
+/* RED 1 in corner */
+#red-one {
+    position: fixed;
+    top: 5px;
+    right: 5px;
+    color: red;
+    font-size: 32px;
+    z-index: 20000;
+    font-weight: bold;
 }
 </style>
 </head>
 <body>
 
+<div id="red-one">1</div>
+
 <div id="game-wrapper">
     <div id="lose-poo-left" class="lose-poo">💩</div>
     <div id="lose-poo-right" class="lose-poo">💩</div>
-
     <h1>GLABDLE</h1>
 
     <div id="game-container">
@@ -264,7 +228,6 @@ h1 {
 <input type="text" id="mobile-input" maxlength="5" />
 
 <div id="win-gif-container"></div>
-
 <div id="lose-gif-container">
   <div class="tenor-gif-embed" data-postid="6289320449545116130" data-share-method="host" data-aspect-ratio="1.32447" data-width="100%">
     <a href="https://tenor.com/view/stressed-stressed-out-im-stressed-gif-6289320449545116130">Stressed GIF</a> from <a href="https://tenor.com/search/stressed-gifs">Stressed GIFs</a>
@@ -297,8 +260,14 @@ function createCells(row, rowIndex) {
         const cell = document.createElement('div');
         cell.classList.add('cell');
         row.appendChild(cell);
+
+        // CLICK TO EDIT
         cell.addEventListener('click', () => {
-            if (rowIndex === currentRow) document.getElementById('mobile-input').focus();
+            if(rowIndex === currentRow){
+                currentCol = i;
+                updateActiveCell();
+                document.getElementById('mobile-input').focus();
+            }
         });
     }
 }
@@ -405,12 +374,14 @@ async function handleKey(key){
                 setBlur(true);
                 showWinningGif();
                 startPoopRain(80);
-                setTimeout(()=>{ fadeOut(document.getElementById('win-gif-container')); document.getElementById('win-message').style.display='block'; setTimeout(()=>setBlur(false),2000); },2800);
+                setTimeout(()=>{fadeOut(document.getElementById('win-gif-container')); document.getElementById('win-message').style.display='block'; setTimeout(()=>setBlur(false),2000);},2800);
                 setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
             } else if(currentRow===5){
                 setBlur(true);
                 fadeIn(document.getElementById('lose-gif-container'));
-                setTimeout(()=>{ fadeOut(document.getElementById('lose-gif-container')); document.getElementById('lose-message').style.display='block'; document.getElementById('lose-poo-left').style.display='block'; document.getElementById('lose-poo-right').style.display='block'; startLosePoopRain(40); setTimeout(()=>setBlur(false),2000); },2800);
+                setTimeout(()=>{fadeOut(document.getElementById('lose-gif-container')); document.getElementById('lose-message').style.display='block';
+                document.getElementById('lose-poo-left').style.display='block'; document.getElementById('lose-poo-right').style.display='block';
+                startLosePoopRain(40); setTimeout(()=>setBlur(false),2000);},2800);
                 setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
             }
 
@@ -421,19 +392,17 @@ async function handleKey(key){
     }
 }
 
-// --- FIXED MOBILE INPUT ---
+// MOBILE INPUT
 const mobileInput = document.getElementById('mobile-input');
-if(window.innerWidth <= 500){
-    mobileInput.addEventListener('input', e=>{
-        const value = e.target.value.toUpperCase();
-        if(value.length>0){
-            handleKey(value[value.length-1]);
-            mobileInput.value = '';
-        }
-    });
-}
+mobileInput.addEventListener('input', e=>{
+    const value = e.target.value.toUpperCase();
+    if(value.length>0){
+        handleKey(value[value.length-1]);
+        mobileInput.value = '';
+    }
+});
 
-// Desktop uses normal keydown
+// DESKTOP
 document.addEventListener('keydown', e=>handleKey(e.key));
 
 updateActiveCell();
