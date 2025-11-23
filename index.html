@@ -19,31 +19,126 @@ html, body {
     color: #206cd2;
     flex-direction: column;
     overflow-x: hidden;
-    /* Desktop tiled background */
     background-image: url('https://hosky.io/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FHosky_1200.9361cc3f.png&w=3840&q=85&dpl=dpl_A35He1TJdeTQghKRghvecRxzGvvJ');
     background-repeat: repeat;
     background-size: 150px 150px;
 }
 
-#game-wrapper { display: flex; flex-direction: column; align-items: center; transition: filter 0.3s ease; background-color: black; } 
-h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2; }
-#game-container { display: grid; grid-template-rows: repeat(6, 60px); grid-gap: 10px; margin-bottom: 20px; }
-.row { display: grid; grid-template-columns: repeat(5, 60px); grid-gap: 10px; }
-.cell { width: 60px; height: 60px; border: 2px solid #206cd2; display: flex; justify-content: center; align-items: center; font-size: 36px; text-transform: uppercase; color: #206cd2; background-color: black; user-select: none; }
+#game-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: filter 0.3s ease;
+    background-color: rgba(0,0,0,0.5); /* 50% translucent for desktop */
+}
+
+h1 {
+    font-size: 72px;
+    margin-bottom: 20px;
+    color: #206cd2;
+}
+
+#game-container {
+    display: grid;
+    grid-template-rows: repeat(6, 60px);
+    grid-gap: 10px;
+    margin-bottom: 20px;
+}
+.row {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    grid-gap: 10px;
+}
+.cell {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #206cd2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 36px;
+    text-transform: uppercase;
+    color: #206cd2;
+    background-color: rgba(0,0,0,0.5); /* 50% translucent for desktop */
+    user-select: none;
+}
 .cell.active { border-color: #ffc107; box-shadow: 0 0 10px #ffc107; }
 .green { background-color: #206cd2; color: black; }
 .yellow { background-color: #ffc107; color: black; }
 .gray { background-color: #555; color: black; }
-#alphabet { display: flex; flex-wrap: wrap; max-width: 420px; justify-content: center; gap: 5px; margin-top: 10px; }
-.letter-box { width: 30px; height: 30px; border: 1px solid #206cd2; display: flex; justify-content: center; align-items: center; text-transform: uppercase; color: #206cd2; font-size: 18px; user-select: none; }
+
+#alphabet {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 420px;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 10px;
+    background-color: rgba(0,0,0,0.5); /* 50% translucent for desktop */
+}
+.letter-box {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #206cd2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+    color: #206cd2;
+    font-size: 18px;
+    user-select: none;
+}
 #mobile-input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-#win-gif-container, #lose-gif-container { display: none; opacity: 0; transition: opacity 1s ease; position: fixed; top:50%; left:50%; transform: translate(-50%, -50%); z-index: 9999; width: 450px; max-width: 90%; }
-#win-message, #lose-message { display:none; position: fixed; top:50%; left:50%; transform: translate(-50%, -50%); font-size: 84px; color:white; text-align:center; z-index:9998; background: linear-gradient(90deg, #206cd2, #1a0033); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientMove 0.8s linear infinite alternate; }
+
+#win-gif-container, #lose-gif-container {
+    display: none;
+    opacity: 0;
+    transition: opacity 1s ease;
+    position: fixed;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    width: 450px;
+    max-width: 90%;
+}
+#win-message, #lose-message {
+    display:none;
+    position: fixed;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    font-size: 84px;
+    color:white;
+    text-align:center;
+    z-index:9998;
+    background: linear-gradient(90deg, #206cd2, #1a0033);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientMove 0.8s linear infinite alternate;
+}
 @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 150% 50%; } 100% { background-position: 300% 50%; } }
-.lose-poo { position: fixed; top: 10px; font-size: 180px; display: none; z-index: 10000; user-select: none; pointer-events: none; }
+
+.lose-poo {
+    position: fixed;
+    top: 10px;
+    font-size: 180px;
+    display: none;
+    z-index: 10000;
+    user-select: none;
+    pointer-events: none;
+}
 #lose-poo-left { left: 20px; }
 #lose-poo-right { right: 20px; }
-.falling-poo { position: absolute; pointer-events: none; user-select: none; animation-name: fall; animation-timing-function: linear; }
+
+.falling-poo {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    animation-name: fall;
+    animation-timing-function: linear;
+}
 @keyframes fall { 0% { transform: translateY(-200px) rotate(0deg); } 100% { transform: translateY(100vh) rotate(720deg); } }
 
 @media (max-width: 500px) {
@@ -70,7 +165,6 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2; }
     .lose-poo { font-size: 80px; top: 5px; }
 }
 
-/* --- TOTAL GAMES COUNTER --- */
 #games-counter {
     position: fixed;
     top: 10px;
@@ -111,37 +205,32 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2; }
 <div id="win-message">Good job idjiot, you wen</div>
 <div id="lose-message">Try again, idjiot</div>
 
-<!-- TOTAL GAMES COUNTER -->
 <div id="games-counter">Total games submitted: <span id="games-count">0</span></div>
 
 <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
 
 <script>
 // --- Profanity filter ---
-const profaneWords = ["fuck","shit","bitch","bastard","dick","cunt","asshole","nigger","faggot","slut","whore","cock","pussy","douche"]; // extend as needed
-function checkProfanity(word){
-    const lower = word.toLowerCase();
-    return profaneWords.some(p => lower.includes(p));
-}
+const profaneWords = ["fuck","shit","bitch","bastard","dick","cunt","asshole","nigger","faggot","slut","whore","cock","pussy","douche"];
+function checkProfanity(word){ const lower = word.toLowerCase(); return profaneWords.some(p => lower.includes(p)); }
 
 const targetWord = "HOSKY";
-let currentRow = 0;
-let currentCol = 0;
+let currentRow = 0, currentCol = 0;
 const extraWords = ["HOSKY","GLABS"];
 const gameWrapper = document.getElementById('game-wrapper');
 const winningGifs = ["4540374823853696704","24111898","24123953","25514478","10534076","7551288617603856546"];
 
 // --- CREATE CELLS ---
-function createCells(row, rowIndex){
+function createCells(row,rowIndex){
     for(let i=0;i<5;i++){
-        const cell = document.createElement('div');
+        const cell=document.createElement('div');
         cell.classList.add('cell');
         row.appendChild(cell);
-        cell.addEventListener('click', ()=>{
+        cell.addEventListener('click',()=>{
             if(rowIndex===currentRow){
                 currentCol=i;
                 updateActiveCell();
-                if(window.innerWidth <= 500) document.getElementById('mobile-input').focus();
+                if(window.innerWidth<=500) document.getElementById('mobile-input').focus();
                 row.scrollIntoView({behavior:'smooth', block:'center'});
             }
         });
@@ -150,7 +239,7 @@ function createCells(row, rowIndex){
 for(let i=0;i<6;i++) createCells(document.getElementById(`row${i}`), i);
 
 // --- ALPHABET ---
-const alphabetContainer = document.getElementById('alphabet');
+const alphabetContainer=document.getElementById('alphabet');
 for(let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
     const box=document.createElement('div');
     box.classList.add('letter-box');
@@ -160,41 +249,118 @@ for(let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
 }
 
 // --- GAME FUNCTIONS ---
-function updateAlphabet(letter,state){const box=document.getElementById(`letter-${letter}`);if(!box)return;if(state==='green'){box.style.backgroundColor='#206cd2'; box.style.color='black';}else if(state==='yellow'){box.style.backgroundColor='#ffc107'; box.style.color='black';}else{box.style.backgroundColor='#555'; box.style.color='black';}}
-function updateActiveCell(){document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell');if(currentCol<5)cells[currentCol].classList.add('active');}
-function startPoopRain(count=50){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-100)+'px';poop.style.fontSize=(80+Math.random()*120)+'px';poop.style.animationDuration=(5+Math.random()*5)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
-function startLosePoopRain(count=30){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-80)+'px';poop.style.fontSize=(60+Math.random()*80)+'px';poop.style.animationDuration=(5+Math.random()*5)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
-function setBlur(enable){gameWrapper.style.filter=enable?'blur(5px)':'none';}
-function fadeIn(el){el.style.display='block';requestAnimationFrame(()=>el.style.opacity='1');}
-function fadeOut(el){el.style.opacity='0';setTimeout(()=>el.style.display='none',1000);}
-async function isValidWord(word){word=word.toLowerCase();if(extraWords.includes(word.toUpperCase())) return true;try{const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);return res.ok;}catch(e){return false;}}
-function handleBackspace(cells){if(cells[currentCol].textContent==="" && currentCol>0) currentCol--;cells[currentCol].textContent="";updateActiveCell();if(window.innerWidth<=500) setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);}
-function showWinningGif(){const gifContainer=document.getElementById('win-gif-container');const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];gifContainer.innerHTML="";const embedDiv=document.createElement("div");embedDiv.className="tenor-gif-embed";embedDiv.setAttribute("data-postid",randomId);embedDiv.setAttribute("data-share-method","host");embedDiv.setAttribute("data-aspect-ratio","1");embedDiv.setAttribute("data-width","100%");gifContainer.appendChild(embedDiv);const script=document.createElement("script");script.type="text/javascript";script.async=true;script.src="https://tenor.com/embed.js";gifContainer.appendChild(script);fadeIn(gifContainer);}
+function updateAlphabet(letter,state){
+    const box=document.getElementById(`letter-${letter}`);
+    if(!box) return;
+    if(state==='green'){box.style.backgroundColor='#206cd2'; box.style.color='black';}
+    else if(state==='yellow'){box.style.backgroundColor='#ffc107'; box.style.color='black';}
+    else{box.style.backgroundColor='#555'; box.style.color='black';}
+}
+
+function updateActiveCell(){
+    document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));
+    const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell');
+    if(currentCol<5) cells[currentCol].classList.add('active');
+}
+
+function startPoopRain(count=50){
+    for(let i=0;i<count;i++){
+        const poop=document.createElement('div');
+        poop.classList.add('falling-poo');
+        poop.textContent='💩';
+        poop.style.left=Math.random()*(window.innerWidth-100)+'px';
+        poop.style.fontSize=(80+Math.random()*120)+'px';
+        poop.style.animationDuration=(5+Math.random()*5)+'s';
+        document.body.appendChild(poop);
+        poop.addEventListener('animationend',()=>poop.remove());
+    }
+}
+
+function startLosePoopRain(count=30){
+    for(let i=0;i<count;i++){
+        const poop=document.createElement('div');
+        poop.classList.add('falling-poo');
+        poop.textContent='💩';
+        poop.style.left=Math.random()*(window.innerWidth-80)+'px';
+        poop.style.fontSize=(60+Math.random()*80)+'px';
+        poop.style.animationDuration=(5+Math.random()*5)+'s';
+        document.body.appendChild(poop);
+        poop.addEventListener('animationend',()=>poop.remove());
+    }
+}
+
+function setBlur(enable){ gameWrapper.style.filter=enable?'blur(5px)':'none'; }
+function fadeIn(el){ el.style.display='block'; requestAnimationFrame(()=>el.style.opacity='1'); }
+function fadeOut(el){ el.style.opacity='0'; setTimeout(()=>el.style.display='none',1000); }
+
+async function isValidWord(word){
+    word=word.toLowerCase();
+    if(extraWords.includes(word.toUpperCase())) return true;
+    try{ const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`); return res.ok; }
+    catch(e){ return false; }
+}
+
+function handleBackspace(cells){
+    if(cells[currentCol].textContent==="" && currentCol>0) currentCol--;
+    cells[currentCol].textContent="";
+    updateActiveCell();
+    if(window.innerWidth<=500) setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);
+}
+
+function showWinningGif(){
+    const gifContainer=document.getElementById('win-gif-container');
+    const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];
+    gifContainer.innerHTML="";
+    const embedDiv=document.createElement("div");
+    embedDiv.className="tenor-gif-embed";
+    embedDiv.setAttribute("data-postid",randomId);
+    embedDiv.setAttribute("data-share-method","host");
+    embedDiv.setAttribute("data-aspect-ratio","1");
+    embedDiv.setAttribute("data-width","100%");
+    gifContainer.appendChild(embedDiv);
+    const script=document.createElement("script");
+    script.type="text/javascript"; script.async=true; script.src="https://tenor.com/embed.js"; gifContainer.appendChild(script);
+    fadeIn(gifContainer);
+}
 
 // --- MOBILE + DESKTOP INPUT ---
 const mobileInput=document.getElementById('mobile-input');
-mobileInput.addEventListener('input',e=>{const value=e.target.value.toUpperCase();if(value.length>0){if(value==="\b"){const row=document.getElementById(`row${currentRow}`);handleBackspace(row.querySelectorAll('.cell'));}else handleKey(value[value.length-1]);mobileInput.value='';}});
+mobileInput.addEventListener('input',e=>{
+    const value=e.target.value.toUpperCase();
+    if(value.length>0){
+        if(value==="\b"){ const row=document.getElementById(`row${currentRow}`); handleBackspace(row.querySelectorAll('.cell')); }
+        else handleKey(value[value.length-1]);
+        mobileInput.value='';
+    }
+});
+
 document.addEventListener('keydown',e=>handleKey(e.key));
-if(window.innerWidth<=500){window.addEventListener('load',()=>{mobileInput.focus(); setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);});}
+
+if(window.innerWidth<=500){
+    window.addEventListener('load',()=>{
+        mobileInput.focus();
+        setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
+    });
+}
 
 // --- TOTAL GAMES COUNTER ---
-let totalGames = parseInt(localStorage.getItem('glabble_totalGames')||'0');
-document.getElementById('games-count').textContent = totalGames;
+let totalGames=parseInt(localStorage.getItem('glabble_totalGames')||'0');
+document.getElementById('games-count').textContent=totalGames;
 
-// --- HANDLE KEYS WITH SAYOS AND PROFANITY ---
+// --- HANDLE KEYS ---
 async function handleKey(key){
-    const row = document.getElementById(`row${currentRow}`);
-    const cells = row.querySelectorAll('.cell');
+    const row=document.getElementById(`row${currentRow}`);
+    const cells=row.querySelectorAll('.cell');
 
-    if(key==='Backspace'){ handleBackspace(cells); } 
+    if(key==='Backspace'){ handleBackspace(cells); }
     else if(key==='Enter'){
-        if(Array.from(cells).every(c => c.textContent!=="")){
+        if(Array.from(cells).every(c=>c.textContent!=="")){
             const guess=Array.from(cells).map(c=>c.textContent).join('').toUpperCase();
 
-            // ✅ SAYOS redirect
+            // SAYOS redirect
             if(guess==="SAYOS"){ window.location.href="https://en.wikipedia.org/wiki/Burbot"; return; }
 
-            // ✅ PROFANITY check
+            // PROFANITY check
             if(checkProfanity(guess)){ window.location.href="https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/"; return; }
 
             // increment counter
@@ -203,15 +369,41 @@ async function handleKey(key){
 
             if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return; }
 
-            for(let i=0;i<5;i++){const letter=cells[i].textContent.toUpperCase();if(letter===targetWord[i]){cells[i].classList.add('green');updateAlphabet(letter,'green');}else if(targetWord.includes(letter)){cells[i].classList.add('yellow');updateAlphabet(letter,'yellow');}else{cells[i].classList.add('gray');updateAlphabet(letter,'gray');} }
-            
-            if(guess===targetWord){setBlur(true);showWinningGif();startPoopRain(80);setTimeout(()=>{fadeOut(document.getElementById('win-gif-container'));document.getElementById('win-message').style.display='block';setTimeout(()=>setBlur(false),2000);},2800);setTimeout(()=>{window.location.href="https://hosky.io";},8000);}
-            else if(currentRow===5){setBlur(true);fadeIn(document.getElementById('lose-gif-container'));setTimeout(()=>{fadeOut(document.getElementById('lose-gif-container'));document.getElementById('lose-message').style.display='block';document.getElementById('lose-poo-left').style.display='block';document.getElementById('lose-poo-right').style.display='block';startLosePoopRain(40);setTimeout(()=>setBlur(false),2000);},2800);setTimeout(()=>{window.location.href="https://hosky.io";},8000);}
+            for(let i=0;i<5;i++){
+                const letter=cells[i].textContent.toUpperCase();
+                if(letter===targetWord[i]){ cells[i].classList.add('green'); updateAlphabet(letter,'green'); }
+                else if(targetWord.includes(letter)){ cells[i].classList.add('yellow'); updateAlphabet(letter,'yellow'); }
+                else{ cells[i].classList.add('gray'); updateAlphabet(letter,'gray'); }
+            }
+
+            if(guess===targetWord){
+                setBlur(true);
+                showWinningGif();
+                startPoopRain(80);
+                setTimeout(()=>{
+                    fadeOut(document.getElementById('win-gif-container'));
+                    document.getElementById('win-message').style.display='block';
+                },2800);
+                setTimeout(()=>{ window.location.href="https://hosky.io"; },8000);
+            } else if(currentRow===5){
+                setBlur(true);
+                fadeIn(document.getElementById('lose-gif-container'));
+                setTimeout(()=>{
+                    fadeOut(document.getElementById('lose-gif-container'));
+                    document.getElementById('lose-message').style.display='block';
+                    document.getElementById('lose-poo-left').style.display='block';
+                    document.getElementById('lose-poo-right').style.display='block';
+                    startLosePoopRain(40);
+                },2800);
+                setTimeout(()=>{ window.location.href="https://hosky.io"; },8000);
+            }
 
             currentRow++; currentCol=0; updateActiveCell();
         }
-    } 
-    else if(/^[a-zA-Z]$/.test(key)){if(currentCol<5){cells[currentCol].textContent=key.toUpperCase();if(currentCol<4) currentCol++;updateActiveCell();}}
+    }
+    else if(/^[a-zA-Z]$/.test(key)){
+        if(currentCol<5){ cells[currentCol].textContent=key.toUpperCase(); if(currentCol<4) currentCol++; updateActiveCell(); }
+    }
 }
 
 updateActiveCell();
