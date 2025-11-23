@@ -28,7 +28,7 @@ html, body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: rgba(0,0,0,0.5); /* desktop translucency */
+    background-color: rgba(0,0,0,0.5);
     min-width: 340px;
     max-width: 90vw;
     padding: 20px;
@@ -118,7 +118,7 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2; }
   </div>
 </div>
 
-<div id="win-message">Good job idjiot, you wen</div>
+<div id="win-message">GOOD JOB IDJIOT</div>
 <div id="lose-message">Try again, idjiot</div>
 
 <div id="games-counter">Total games submitted: <span id="games-count">0</span></div>
@@ -201,38 +201,45 @@ async function handleKey(key){
         if(Array.from(cells).every(c => c.textContent!=="")){
             const guess=Array.from(cells).map(c=>c.textContent).join('').toUpperCase();
 
-            // ✅ SAYOS redirect
             if(guess==="SAYOS"){ window.location.href="https://en.wikipedia.org/wiki/Burbot"; return; }
-
-            // ✅ PROFANITY check
             if(checkProfanity(guess)){ window.location.href="https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/"; return; }
 
-            // increment counter
             totalGames++; localStorage.setItem('glabble_totalGames', totalGames);
             document.getElementById('games-count').textContent=totalGames;
 
             if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return; }
 
-            for(let i=0;i<5;i++){const letter=cells[i].textContent.toUpperCase();if(letter===targetWord[i]){cells[i].classList.add('green');updateAlphabet(letter,'green');}else if(targetWord.includes(letter)){cells[i].classList.add('yellow');updateAlphabet(letter,'yellow');}else{cells[i].classList.add('gray');updateAlphabet(letter,'gray');} }
+            for(let i=0;i<5;i++){
+                const letter=cells[i].textContent.toUpperCase();
+                if(letter===targetWord[i]){cells[i].classList.add('green');updateAlphabet(letter,'green');}
+                else if(targetWord.includes(letter)){cells[i].classList.add('yellow');updateAlphabet(letter,'yellow');}
+                else{cells[i].classList.add('gray');updateAlphabet(letter,'gray');}
+            }
             
             if(guess===targetWord){
                 setBlur(true);
                 showWinningGif();
                 startPoopRain(80);
-                fadeOut(document.getElementById('win-gif-container'));
-                document.getElementById('win-message').style.display='block';
-                // keep blur until redirect
+                setTimeout(()=>{
+                    fadeOut(document.getElementById('win-gif-container'));
+                    setTimeout(()=>{
+                        document.getElementById('win-message').style.display='block';
+                    }, 1000);
+                }, 4000);
                 setTimeout(()=>{ window.location.href="https://hosky.io"; }, 8000);
             }
             else if(currentRow===5){
                 setBlur(true);
                 fadeIn(document.getElementById('lose-gif-container'));
-                fadeOut(document.getElementById('lose-gif-container'));
-                document.getElementById('lose-message').style.display='block';
-                document.getElementById('lose-poo-left').style.display='block';
-                document.getElementById('lose-poo-right').style.display='block';
-                startLosePoopRain(40);
-                // keep blur until redirect
+                setTimeout(()=>{
+                    fadeOut(document.getElementById('lose-gif-container'));
+                    setTimeout(()=>{
+                        document.getElementById('lose-message').style.display='block';
+                        document.getElementById('lose-poo-left').style.display='block';
+                        document.getElementById('lose-poo-right').style.display='block';
+                        startLosePoopRain(40);
+                    }, 1000);
+                }, 4000);
                 setTimeout(()=>{ window.location.href="https://hosky.io"; }, 8000);
             }
 
