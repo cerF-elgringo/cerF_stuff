@@ -2,277 +2,145 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GLABDLE</title>
-
-<!-- Embedded GROBOLD font from CDN -->
 <link href="https://fonts.cdnfonts.com/css/grobold" rel="stylesheet">
-
 <style>
 html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    background-color: black;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'GROBOLD', sans-serif;
-    color: #206cd2;
-    flex-direction: column;
-    overflow-x: hidden;
+    margin:0; padding:0; height:100%; background:black; color:#206cd2; font-family:'GROBOLD', sans-serif;
+    display:flex; justify-content:center; align-items:center; flex-direction:column; overflow-x:hidden;
 }
+#game-wrapper { display:flex; flex-direction:column; align-items:center; transition: filter 0.3s ease, opacity 1s ease; opacity:1;}
+h1 { font-size:72px; margin-bottom:20px; color:#206cd2; }
+#game-container { display:grid; grid-template-rows:repeat(6,60px); grid-gap:10px; margin-bottom:20px; }
+.row { display:grid; grid-template-columns:repeat(5,60px); grid-gap:10px; }
+.cell { width:60px;height:60px;border:2px solid #206cd2; display:flex; justify-content:center; align-items:center; font-size:36px; text-transform:uppercase; color:#206cd2; background:black; user-select:none; }
+.cell.active { border-color:#ffc107; box-shadow:0 0 10px #ffc107; }
+.green { background-color:#206cd2; color:black; }
+.yellow { background-color:#ffc107; color:black; }
+.gray { background-color:#555; color:black; }
+#alphabet { display:flex; flex-wrap:wrap; max-width:420px; justify-content:center; gap:5px; margin-top:10px; }
+.letter-box { width:30px;height:30px; border:1px solid #206cd2; display:flex; justify-content:center; align-items:center; text-transform:uppercase; color:#206cd2; font-size:18px; user-select:none; }
+#mobile-input { position:absolute; opacity:0; width:1px; height:1px; }
 
-h1 {
-    font-size: 72px; /* 50% bigger than default */
-    margin-bottom: 20px;
-}
+#win-gif-container,#lose-gif-container { display:none; opacity:0; transition: opacity 1s ease; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9999; width:450px; max-width:90%; }
 
-#game-container {
-    display: grid;
-    grid-template-rows: repeat(6, 60px);
-    grid-gap: 10px;
-    margin-bottom: 20px;
-}
+#win-message,#lose-message { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:84px; color:white; text-align:center; z-index:9998; background:linear-gradient(90deg,#206cd2,#1a0033); background-size:300% 100%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:gradientMove 0.8s linear infinite alternate;}
+@keyframes gradientMove {0%{background-position:0% 50%}50%{background-position:150% 50%}100%{background-position:300% 50%}}
 
-.row {
-    display: grid;
-    grid-template-columns: repeat(5, 60px);
-    grid-gap: 10px;
-}
-
-.cell {
-    width: 60px;
-    height: 60px;
-    border: 2px solid #206cd2;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 36px;
-    text-transform: uppercase;
-    color: #206cd2;
-    background-color: black;
-    user-select: none;
-}
-
-.cell.active {
-    border-color: #ffc107;
-    box-shadow: 0 0 10px #ffc107;
-}
-
-.green { background-color: #206cd2; color: black; }
-.yellow { background-color: #ffc107; color: black; }
-.gray { background-color: #555; color: black; }
-
-#alphabet {
-    display: flex;
-    flex-wrap: wrap;
-    max-width: 420px;
-    justify-content: center;
-    gap: 5px;
-}
-
-.letter-box {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #206cd2;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-transform: uppercase;
-    color: #206cd2;
-    font-size: 18px;
-    user-select: none;
-}
-
-.poop {
-    position: absolute;
-    font-size: 30px;
-    user-select: none;
-    pointer-events: none;
-    animation: fall linear;
-}
-@keyframes fall {
-    0% { transform: translateY(-50px); }
-    100% { transform: translateY(110vh); }
-}
-
-#mobile-input {
-    position: absolute;
-    opacity: 0;
-    width: 1px;
-    height: 1px;
-}
+.lose-poo { position:fixed; top:10px; font-size:180px; display:none; z-index:10000; user-select:none; pointer-events:none; }
+#lose-poo-left { left:20px; } #lose-poo-right { right:20px; }
+.falling-poo { position:absolute; pointer-events:none; user-select:none; animation-name:fall; animation-timing-function:linear; }
+@keyframes fall { 0% { transform: translateY(-200px) rotate(0deg); } 100% { transform: translateY(100vh) rotate(720deg); } }
 </style>
 </head>
 <body>
-
-<h1>GLABDLE</h1>
-<div id="game-container">
-    <div class="row" id="row0"></div>
-    <div class="row" id="row1"></div>
-    <div class="row" id="row2"></div>
-    <div class="row" id="row3"></div>
-    <div class="row" id="row4"></div>
-    <div class="row" id="row5"></div>
+<div id="game-wrapper">
+    <div id="lose-poo-left" class="lose-poo">💩</div>
+    <div id="lose-poo-right" class="lose-poo">💩</div>
+    <h1>GLABDLE</h1>
+    <div id="game-container">
+        <div class="row" id="row0"></div>
+        <div class="row" id="row1"></div>
+        <div class="row" id="row2"></div>
+        <div class="row" id="row3"></div>
+        <div class="row" id="row4"></div>
+        <div class="row" id="row5"></div>
+    </div>
+    <div id="alphabet"></div>
 </div>
 
-<div id="alphabet"></div>
-
 <input type="text" id="mobile-input" maxlength="5" />
+<div id="win-gif-container"></div>
+<div id="lose-gif-container"></div>
+
+<script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+<div id="win-message">Good job idjiot, you wen</div>
+<div id="lose-message">Try again, idjiot</div>
 
 <script>
-const targetWord = "HOSKY";
-let currentRow = 0;
-let currentCol = 0;
-const usedLetters = {};
+const targetWord="HOSKY";
+let currentRow=0, currentCol=0;
+const extraWords=["HOSKY","GLABS"];
+const gameWrapper=document.getElementById('game-wrapper');
 
-function createCells(row) {
-    for (let i = 0; i < 5; i++) {
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        row.appendChild(cell);
+const winningGifs=["4540374823853696704","24111898","24123953","25514478","10534076","7551288617603856546","16643347237279393973"];
+const losingGifs=["25691738","13827091","5408039","25793687","6753507408299502889","26401692","11376849"];
 
-        // Tapping a cell focuses mobile input
-        cell.addEventListener('click', () => {
-            document.getElementById('mobile-input').focus();
-            updateActiveCell();
-        });
-    }
+function createCells(row,rowIndex){ for(let i=0;i<5;i++){ const cell=document.createElement('div'); cell.classList.add('cell'); row.appendChild(cell); cell.addEventListener('click',()=>{ if(rowIndex===currentRow) document.getElementById('mobile-input').focus(); }); }}
+for(let i=0;i<6;i++) createCells(document.getElementById(`row${i}`),i);
+
+const alphabetContainer=document.getElementById('alphabet');
+for(let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){ const box=document.createElement('div'); box.classList.add('letter-box'); box.id=`letter-${l}`; box.textContent=l; alphabetContainer.appendChild(box); }
+
+function updateAlphabet(letter,state){ const box=document.getElementById(`letter-${letter}`); if(!box) return; if(state==='green'){box.style.backgroundColor='#206cd2'; box.style.color='black';} else if(state==='yellow'){box.style.backgroundColor='#ffc107'; box.style.color='black';} else{box.style.backgroundColor='#555'; box.style.color='black';} }
+function updateActiveCell(){ document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active')); const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell'); if(currentCol<5) cells[currentCol].classList.add('active'); }
+
+function startPoopRain(count=50){ for(let i=0;i<count;i++){ const poop=document.createElement('div'); poop.classList.add('falling-poo'); poop.textContent='💩'; poop.style.left=Math.random()*(window.innerWidth-100)+'px'; poop.style.fontSize=(80+Math.random()*120)+'px'; poop.style.animationDuration=(5+Math.random()*5)+'s'; document.body.appendChild(poop); poop.addEventListener('animationend',()=>poop.remove()); } }
+function setBlur(enable){ gameWrapper.style.filter = enable?'blur(5px)':'none'; }
+function fadeIn(el){ el.style.display='block'; requestAnimationFrame(()=>el.style.opacity='1'); }
+function fadeOut(el){ el.style.opacity='0'; setTimeout(()=>el.style.display='none',1000); }
+
+async function isValidWord(word){ word=word.toLowerCase(); if(extraWords.includes(word.toUpperCase())) return true; try{ const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`); return res.ok;}catch(e){return false;}}
+
+function showGif(containerId,gifArray){
+    const container=document.getElementById(containerId);
+    const randomId=gifArray[Math.floor(Math.random()*gifArray.length)];
+    container.innerHTML="";
+    const div=document.createElement("div");
+    div.className="tenor-gif-embed";
+    div.setAttribute("data-postid",randomId);
+    div.setAttribute("data-share-method","host");
+    div.setAttribute("data-aspect-ratio","1");
+    div.setAttribute("data-width","100%");
+    container.appendChild(div);
+    const script=document.createElement("script");
+    script.type="text/javascript";
+    script.async=true;
+    script.src="https://tenor.com/embed.js";
+    container.appendChild(script);
+    fadeIn(container);
 }
 
-// Initialize grid
-for (let i = 0; i < 6; i++) {
-    createCells(document.getElementById(`row${i}`));
-}
+async function handleKey(key){
+    const row=document.getElementById(`row${currentRow}`);
+    const cells=row.querySelectorAll('.cell');
 
-// Alphabet tracker
-const alphabetContainer = document.getElementById('alphabet');
-const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-for (let l of letters) {
-    const box = document.createElement('div');
-    box.classList.add('letter-box');
-    box.id = `letter-${l}`;
-    box.textContent = l;
-    alphabetContainer.appendChild(box);
-}
+    if(key==='Backspace'){ if(currentCol>0){currentCol--;cells[currentCol].textContent=''; updateActiveCell();} }
+    else if(key==='Enter'){
+        if(currentCol===5){
+            const guess=Array.from(cells).map(c=>c.textContent).join('');
+            if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return; }
 
-function updateAlphabet(letter, state) {
-    const box = document.getElementById(`letter-${letter}`);
-    if (!box) return;
-    if (state === 'green') {
-        box.style.backgroundColor = '#206cd2';
-        box.style.color = 'black';
-    } else if (state === 'yellow') {
-        box.style.backgroundColor = '#ffc107';
-        box.style.color = 'black';
-    } else if (state === 'gray') {
-        box.style.backgroundColor = '#555';
-        box.style.color = 'black';
-    }
-}
-
-// Poop emoji rain
-function startPoopRain(count = 50) {
-    return new Promise(resolve => {
-        let completed = 0;
-        for (let i = 0; i < count; i++) {
-            const poop = document.createElement('div');
-            poop.classList.add('poop');
-            poop.textContent = '💩';
-            poop.style.left = Math.random() * window.innerWidth + 'px';
-            poop.style.animationDuration = 2 + Math.random() * 2 + 's';
-            document.body.appendChild(poop);
-            poop.addEventListener('animationend', () => {
-                poop.remove();
-                completed++;
-                if (completed === count) resolve();
-            });
-        }
-    });
-}
-
-// Update active cell highlight
-function updateActiveCell() {
-    const row = document.getElementById(`row${currentRow}`);
-    const cells = row.querySelectorAll('.cell');
-    cells.forEach(c => c.classList.remove('active'));
-    if (currentCol < 5) {
-        cells[currentCol].classList.add('active');
-    }
-}
-
-// Handle key input
-function handleKey(key) {
-    const row = document.getElementById(`row${currentRow}`);
-    const cells = row.querySelectorAll('.cell');
-
-    if (key === 'Backspace') {
-        if (currentCol > 0) {
-            currentCol--;
-            cells[currentCol].textContent = '';
-            updateActiveCell();
-        }
-    } else if (key === 'Enter') {
-        if (currentCol === 5) {
-            const guess = Array.from(cells).map(c => c.textContent).join('');
-            for (let i = 0; i < 5; i++) {
-                const letter = cells[i].textContent.toUpperCase();
-                if (letter === targetWord[i]) {
-                    cells[i].classList.add('green');
-                    usedLetters[letter] = 'green';
-                    updateAlphabet(letter, 'green');
-                } else if (targetWord.includes(letter)) {
-                    cells[i].classList.add('yellow');
-                    if (!usedLetters[letter]) updateAlphabet(letter, 'yellow');
-                } else {
-                    cells[i].classList.add('gray');
-                    usedLetters[letter] = 'gray';
-                    updateAlphabet(letter, 'gray');
-                }
+            for(let i=0;i<5;i++){
+                const letter=cells[i].textContent.toUpperCase();
+                if(letter===targetWord[i]){cells[i].classList.add('green'); updateAlphabet(letter,'green');}
+                else if(targetWord.includes(letter)){cells[i].classList.add('yellow'); updateAlphabet(letter,'yellow');}
+                else{cells[i].classList.add('gray'); updateAlphabet(letter,'gray');}
             }
-            currentRow++;
-            currentCol = 0;
-            updateActiveCell();
-            if (guess === targetWord) {
-                startPoopRain(80).then(() => {
-                    alert("GJ IDJIOT U GOT IT WEN WEN WEN");
-                });
-            } else if (currentRow >= 6) {
-                alert(`Game over! The word was ${targetWord}.`);
+
+            if(guess===targetWord){
+                setBlur(true);
+                showGif('win-gif-container',winningGifs);
+                startPoopRain(80);
+                setTimeout(()=>{ window.location.href="https://hosky.io"; },2800);
+            } else if(currentRow===5){
+                setBlur(true);
+                showGif('lose-gif-container',losingGifs);
+                setTimeout(()=>{ window.location.href="https://hosky.io"; },2800);
             }
+
+            currentRow++; currentCol=0; updateActiveCell();
         }
-    } else if (/^[a-zA-Z]$/.test(key)) {
-        if (currentCol < 5) {
-            cells[currentCol].textContent = key.toUpperCase();
-            currentCol++;
-            updateActiveCell();
-        }
-    }
+    } else if(/^[a-zA-Z]$/.test(key)){ if(currentCol<5){cells[currentCol].textContent=key.toUpperCase(); currentCol++; updateActiveCell();} }
 }
 
-// Desktop key handling
-document.addEventListener('keydown', e => handleKey(e.key));
-
-// Mobile key handling
-const mobileInput = document.getElementById('mobile-input');
-mobileInput.addEventListener('input', () => {
-    const value = mobileInput.value.toUpperCase();
-    if (value.length > 0) {
-        const key = value[value.length - 1]; // last typed char
-        handleKey(key);
-        mobileInput.value = ''; // clear input for next char
-    }
-});
-
-mobileInput.addEventListener('keydown', e => {
-    handleKey(e.key);
-    setTimeout(() => mobileInput.value = '', 0);
-});
-
-// Initialize first active cell
+document.addEventListener('keydown',e=>handleKey(e.key));
+const mobileInput=document.getElementById('mobile-input');
+mobileInput.addEventListener('input',()=>{ const value=mobileInput.value.toUpperCase(); if(value.length>0){handleKey(value[value.length-1]); mobileInput.value='';}});
+mobileInput.addEventListener('keydown',e=>{ handleKey(e.key); setTimeout(()=>mobileInput.value='',0); });
 updateActiveCell();
 </script>
-
 </body>
 </html>
 
