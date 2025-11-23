@@ -35,7 +35,13 @@ html, body {
     border-radius: 10px;
 }
 
-h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2; }
+h1 { 
+    font-size: 72px; 
+    margin-bottom: 20px; 
+    color: #206cd2;
+    text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; /* green glow */
+}
+
 #game-container { display: grid; grid-template-rows: repeat(6, 60px); grid-gap: 10px; margin-bottom: 20px; }
 .row { display: grid; grid-template-columns: repeat(5, 60px); grid-gap: 10px; }
 .cell { width: 60px; height: 60px; border: 2px solid #206cd2; display: flex; justify-content: center; align-items: center; font-size: 36px; text-transform: uppercase; color: #206cd2; background-color: black; user-select: none; }
@@ -170,7 +176,17 @@ for(let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
 
 // --- GAME FUNCTIONS ---
 function updateAlphabet(letter,state){const box=document.getElementById(`letter-${letter}`);if(!box)return;if(state==='green'){box.style.backgroundColor='#206cd2'; box.style.color='black';}else if(state==='yellow'){box.style.backgroundColor='#ffc107'; box.style.color='black';}else{box.style.backgroundColor='#555'; box.style.color='black';}}
-function updateActiveCell(){document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell');if(currentCol<5)cells[currentCol].classList.add('active');}
+function updateActiveCell(){
+    document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));
+    const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell');
+    if(currentCol<5) cells[currentCol].classList.add('active');
+
+    // --- SCROLL ACTIVE ROW INTO VIEW ON MOBILE ---
+    if(window.innerWidth <= 500){
+        const rowElement = document.getElementById(`row${currentRow}`);
+        setTimeout(()=>{ rowElement.scrollIntoView({behavior:'smooth', block:'center'}); }, 50);
+    }
+}
 function startPoopRain(count=50){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-100)+'px';poop.style.fontSize=(80+Math.random()*120)+'px';poop.style.animationDuration=(5+Math.random()*5)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
 function startLosePoopRain(count=30){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-80)+'px';poop.style.fontSize=(60+Math.random()*80)+'px';poop.style.animationDuration=(5+Math.random()*5)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
 function setBlur(enable){gameWrapper.style.filter=enable?'blur(5px)':'none';}
@@ -209,12 +225,7 @@ async function handleKey(key){
 
             if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return; }
 
-            for(let i=0;i<5;i++){
-                const letter=cells[i].textContent.toUpperCase();
-                if(letter===targetWord[i]){cells[i].classList.add('green');updateAlphabet(letter,'green');}
-                else if(targetWord.includes(letter)){cells[i].classList.add('yellow');updateAlphabet(letter,'yellow');}
-                else{cells[i].classList.add('gray');updateAlphabet(letter,'gray');}
-            }
+            for(let i=0;i<5;i++){const letter=cells[i].textContent.toUpperCase();if(letter===targetWord[i]){cells[i].classList.add('green');updateAlphabet(letter,'green');}else if(targetWord.includes(letter)){cells[i].classList.add('yellow');updateAlphabet(letter,'yellow');}else{cells[i].classList.add('gray');updateAlphabet(letter,'gray');} }
             
             if(guess===targetWord){
                 setBlur(true);
@@ -222,9 +233,7 @@ async function handleKey(key){
                 startPoopRain(80);
                 setTimeout(()=>{
                     fadeOut(document.getElementById('win-gif-container'));
-                    setTimeout(()=>{
-                        document.getElementById('win-message').style.display='block';
-                    }, 1000);
+                    document.getElementById('win-message').style.display='block';
                 }, 4000);
                 setTimeout(()=>{ window.location.href="https://hosky.io"; }, 8000);
             }
@@ -233,13 +242,11 @@ async function handleKey(key){
                 fadeIn(document.getElementById('lose-gif-container'));
                 setTimeout(()=>{
                     fadeOut(document.getElementById('lose-gif-container'));
-                    setTimeout(()=>{
-                        document.getElementById('lose-message').style.display='block';
-                        document.getElementById('lose-poo-left').style.display='block';
-                        document.getElementById('lose-poo-right').style.display='block';
-                        startLosePoopRain(40);
-                    }, 1000);
+                    document.getElementById('lose-message').style.display='block';
                 }, 4000);
+                document.getElementById('lose-poo-left').style.display='block';
+                document.getElementById('lose-poo-right').style.display='block';
+                startLosePoopRain(40);
                 setTimeout(()=>{ window.location.href="https://hosky.io"; }, 8000);
             }
 
