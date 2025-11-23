@@ -180,41 +180,8 @@ for(let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
 // --- GAME FUNCTIONS ---
 function updateAlphabet(letter,state){const box=document.getElementById(`letter-${letter}`);if(!box)return;if(state==='green'){box.style.backgroundColor='#206cd2'; box.style.color='black';}else if(state==='yellow'){box.style.backgroundColor='#ffc107'; box.style.color='black';}else{box.style.backgroundColor='#555'; box.style.color='black';}}
 function updateActiveCell(){document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell');if(currentCol<5) cells[currentCol].classList.add('active'); if(window.innerWidth <= 500){setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);}}
-function startPoopRain(count = 50) {
-    const glowColors = ['#00f', '#ffa500', '#0f0', '#f00', '#ff0', '#ff69b4']; // blue, orange, green, red, yellow, pink
-
-    for (let i = 0; i < count; i++) {
-        const poop = document.createElement('div');
-        poop.classList.add('falling-poo');
-        poop.textContent = '💩';
-        
-        // Random position and size
-        poop.style.left = Math.random() * (window.innerWidth - 100) + 'px';
-        const size = 60 + Math.random() * 120;
-        poop.style.fontSize = size + 'px';
-
-        // Random glow color and intensity
-        const color = glowColors[Math.floor(Math.random() * glowColors.length)];
-        const glow = Math.floor(Math.random() * 20 + 10);
-        poop.style.textShadow = `
-            0 0 ${glow}px ${color},
-            0 0 ${glow * 1.5}px ${color},
-            0 0 ${glow * 2}px ${color},
-            0 0 ${glow * 3}px ${color}
-        `;
-
-        // Random fall duration and rotation
-        const duration = 4 + Math.random() * 22; // different speeds
-        const rotate = 360 + Math.random() * 720;
-        poop.style.animation = `fall ${duration}s linear forwards, spin ${duration}s linear infinite`;
-        poop.style.transform = `rotate(${Math.random()*360}deg) scale(${0.5 + Math.random()*1.5})`;
-
-        document.body.appendChild(poop);
-
-        // Remove poop after falling
-        poop.addEventListener('animationend', () => poop.remove());
-    }
-};
+function startPoopRain(count=50){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-100)+'px';poop.style.fontSize=(80+Math.random()*120)+'px';poop.style.animationDuration=(5+Math.random()*5)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
+function startLosePoopRain(count=30){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-80)+'px';poop.style.fontSize=(60+Math.random()*80)+'px';poop.style.animationDuration=(5+Math.random()*5)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
 function setBlur(enable){gameWrapper.style.filter=enable?'blur(5px)':'none';}
 function fadeIn(el){el.style.display='block';requestAnimationFrame(()=>el.style.opacity='1');}
 function fadeOut(el){el.style.opacity='0';setTimeout(()=>el.style.display='none',1000);}
