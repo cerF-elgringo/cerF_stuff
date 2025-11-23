@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>HOSKY GLABDLE</title>
+<title>GLABDLE</title>
 
 <!-- Embedded GROBOLD font from CDN -->
 <link href="https://fonts.cdnfonts.com/css/grobold" rel="stylesheet">
@@ -23,7 +23,7 @@ html, body {
 }
 
 h1 {
-    font-size: 48px;
+    font-size: 72px; /* 50% bigger than default */
     margin-bottom: 20px;
 }
 
@@ -132,7 +132,7 @@ function createCells(row) {
         cell.classList.add('cell');
         row.appendChild(cell);
 
-        // Make cells tappable on mobile
+        // Tapping a cell focuses mobile input
         cell.addEventListener('click', () => {
             document.getElementById('mobile-input').focus();
             updateActiveCell();
@@ -257,13 +257,11 @@ document.addEventListener('keydown', e => handleKey(e.key));
 const mobileInput = document.getElementById('mobile-input');
 mobileInput.addEventListener('input', () => {
     const value = mobileInput.value.toUpperCase();
-    const row = document.getElementById(`row${currentRow}`);
-    const cells = row.querySelectorAll('.cell');
-    for (let i = 0; i < 5; i++) {
-        cells[i].textContent = value[i] || '';
+    if (value.length > 0) {
+        const key = value[value.length - 1]; // last typed char
+        handleKey(key);
+        mobileInput.value = ''; // clear input for next char
     }
-    currentCol = value.length;
-    updateActiveCell();
 });
 
 mobileInput.addEventListener('keydown', e => {
