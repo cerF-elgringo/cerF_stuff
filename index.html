@@ -39,7 +39,7 @@ h1 {
     font-size: 72px; 
     margin-bottom: 20px; 
     color: #206cd2;
-    text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+    text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; /* green glow */
 }
 
 #game-container { display: grid; grid-template-rows: repeat(6, 60px); grid-gap: 10px; margin-bottom: 20px; }
@@ -64,6 +64,7 @@ h1 {
     left:50%; 
     transform: translate(-50%, -50%); 
     font-size: 84px; 
+    line-height: 1.1;  /* added to prevent clipping */
     text-align:center; 
     z-index:9998; 
     background: linear-gradient(90deg, #206cd2, #1a0033); 
@@ -71,7 +72,8 @@ h1 {
     -webkit-background-clip: text; 
     -webkit-text-fill-color: transparent; 
     animation: gradientMove 0.8s linear infinite alternate; 
-    filter: drop-shadow(0 0 6px #ff69b4) drop-shadow(0 0 12px #ff69b4);
+    filter: drop-shadow(0 0 6px #ff69b4) drop-shadow(0 0 12px #ff69b4); /* subtle pink glow */
+    overflow: visible;  /* added to prevent clipping */
 }
 
 @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 150% 50%; } 100% { background-position: 300% 50%; } }
@@ -89,7 +91,7 @@ h1 {
     .cell { width: 40px; height: 40px; font-size: 24px; }
     #alphabet { gap: 3px; }
     .letter-box { width: 25px; height: 25px; font-size: 14px; }
-    #win-message, #lose-message { font-size: 32px; }
+    #win-message, #lose-message { font-size: 32px; top:48%; } /* adjusted top for mobile */
     .lose-poo { font-size: 100px; top: 5px; }
 }
 
@@ -99,7 +101,7 @@ h1 {
     .cell { width: 35px; height: 35px; font-size: 20px; }
     #alphabet { gap: 2px; }
     .letter-box { width: 22px; height: 22px; font-size: 12px; }
-    #win-message, #lose-message { font-size: 28px; }
+    #win-message, #lose-message { font-size: 28px; top:48%; }
     .lose-poo { font-size: 80px; top: 5px; }
 }
 
@@ -134,7 +136,11 @@ h1 {
 <input type="text" id="mobile-input" maxlength="5" />
 
 <div id="win-gif-container"></div>
-<div id="lose-gif-container"></div>
+<div id="lose-gif-container">
+  <div class="tenor-gif-embed" data-postid="6289320449545116130" data-share-method="host" data-aspect-ratio="1.32447" data-width="100%">
+    <a href="https://tenor.com/view/stressed-stressed-out-im-stressed-gif-6289320449545116130">Stressed GIF</a>
+  </div>
+</div>
 
 <div id="win-message">GOOD JOB IDJIOT</div>
 <div id="lose-message">Try again, idjiot</div>
@@ -156,10 +162,7 @@ let currentRow = 0;
 let currentCol = 0;
 const extraWords = ["HOSKY","GLABS"];
 const gameWrapper = document.getElementById('game-wrapper');
-
-// --- WIN/LOSE GIFS ---
-const winningGifs = ["4540374823853696704","24111898","24123953","10534076","7551288617603856546"];
-const losingGifs = ["6289320449545116130","24576363","5408039","1639610178022128587","1514012758219765433"];
+const winningGifs = ["4540374823853696704","24111898","24123953","10534076","7551288617603856546"]; // removed 25514478
 
 // --- CREATE CELLS ---
 function createCells(row, rowIndex){
@@ -208,45 +211,8 @@ function fadeIn(el){el.style.display='block';requestAnimationFrame(()=>el.style.
 function fadeOut(el){el.style.opacity='0';setTimeout(()=>el.style.display='none',1000);}
 async function isValidWord(word){word=word.toLowerCase();if(extraWords.includes(word.toUpperCase())) return true;try{const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);return res.ok;}catch(e){return false;}}
 function handleBackspace(cells){if(cells[currentCol].textContent==="" && currentCol>0) currentCol--;cells[currentCol].textContent="";updateActiveCell();if(window.innerWidth<=500) setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);}
-
-// --- WIN/LOSE GIF EMBED ---
-function showWinningGif(){
-    const gifContainer=document.getElementById('win-gif-container');
-    const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];
-    gifContainer.innerHTML="";
-    const embedDiv=document.createElement("div");
-    embedDiv.className="tenor-gif-embed";
-    embedDiv.setAttribute("data-postid",randomId);
-    embedDiv.setAttribute("data-share-method","host");
-    embedDiv.setAttribute("data-aspect-ratio","1");
-    embedDiv.setAttribute("data-width","100%");
-    gifContainer.appendChild(embedDiv);
-    const script=document.createElement("script");
-    script.type="text/javascript";
-    script.async=true;
-    script.src="https://tenor.com/embed.js";
-    gifContainer.appendChild(script);
-    fadeIn(gifContainer);
-}
-
-function showLosingGif(){
-    const gifContainer=document.getElementById('lose-gif-container');
-    const randomId=losingGifs[Math.floor(Math.random()*losingGifs.length)];
-    gifContainer.innerHTML="";
-    const embedDiv=document.createElement("div");
-    embedDiv.className="tenor-gif-embed";
-    embedDiv.setAttribute("data-postid",randomId);
-    embedDiv.setAttribute("data-share-method","host");
-    embedDiv.setAttribute("data-aspect-ratio","1");
-    embedDiv.setAttribute("data-width","100%");
-    gifContainer.appendChild(embedDiv);
-    const script=document.createElement("script");
-    script.type="text/javascript";
-    script.async=true;
-    script.src="https://tenor.com/embed.js";
-    gifContainer.appendChild(script);
-    fadeIn(gifContainer);
-}
+function clearCurrentRow(){const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell'); cells.forEach(c=>c.textContent=""); currentCol=0; updateActiveCell(); }
+function showWinningGif(){const gifContainer=document.getElementById('win-gif-container');const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];gifContainer.innerHTML="";const embedDiv=document.createElement("div");embedDiv.className="tenor-gif-embed";embedDiv.setAttribute("data-postid",randomId);embedDiv.setAttribute("data-share-method","host");embedDiv.setAttribute("data-aspect-ratio","1");embedDiv.setAttribute("data-width","100%");gifContainer.appendChild(embedDiv);const script=document.createElement("script");script.type="text/javascript";script.async=true;script.src="https://tenor.com/embed.js";gifContainer.appendChild(script);fadeIn(gifContainer);}
 
 // --- MOBILE + DESKTOP INPUT ---
 const mobileInput=document.getElementById('mobile-input');
@@ -270,33 +236,61 @@ async function handleKey(key){
             const guess=Array.from(cells).map(c=>c.textContent).join('').toUpperCase();
 
             if(guess==="SAYOS"){ 
-                const urls=["https://en.wikipedia.org/wiki/Burbot","https://www.mazda.com/en/","https://www.youtube.com/watch?v=K1fyza5BN-0","https://www.hkmaps.hk/viewer.html","https://www.youtube.com/watch?v=YJFNdIJnrHY","https://www.spanishdict.com/translate/sayos"];
-                window.location.href=urls[Math.floor(Math.random()*urls.length)];
-                return; 
+                const sayosLinks = [
+                    "https://en.wikipedia.org/wiki/Burbot",
+                    "https://www.mazda.com/en/",
+                    "https://www.youtube.com/watch?v=K1fyza5BN-0",
+                    "https://www.hkmaps.hk/viewer.html",
+                    "https://www.youtube.com/watch?v=YJFNdIJnrHY",
+                    "https://www.spanishdict.com/translate/sayos"
+                ];
+                window.location.href = sayosLinks[Math.floor(Math.random()*sayosLinks.length)];
+                return;
             }
             if(guess==="VEGAS"){ 
-                const urls=["https://x.com/HoskyDevVegas/status/1947043091216494826","https://www.dreamvacations.com/vacation/destinations/all","https://www.youtube.com/watch?v=1DUaR0zBGgQ","https://www.christinascucina.com/beans-on-toast-the-proper-british-way-recipe-by-a-brit/","https://www.urbandictionary.com/define.php?term=foo-foo%20drink"];
-                window.location.href=urls[Math.floor(Math.random()*urls.length)];
-                return; 
+                const vegasLinks = [
+                    "https://x.com/HoskyDevVegas/status/1947043091216494826",
+                    "https://www.dreamvacations.com/vacation/destinations/all",
+                    "https://www.youtube.com/watch?v=1DUaR0zBGgQ",
+                    "https://www.christinascucina.com/beans-on-toast-the-proper-british-way-recipe-by-a-brit/",
+                    "https://www.urbandictionary.com/define.php?term=foo-foo%20drink"
+                ];
+                window.location.href = vegasLinks[Math.floor(Math.random()*vegasLinks.length)];
+                return;
             }
             if(guess==="JINXY"){ 
-                const urls=["https://en.wikipedia.org/wiki/Flat_bean","https://www.reddit.com/r/Netherlands/comments/1ghutfw/what_are_some_crucial_traditional_dutch/","https://www.thedutchtable.com/2010/10/bitterballen-dutch-deep-fried-gravy.html"];
-                window.location.href=urls[Math.floor(Math.random()*urls.length)];
-                return; 
+                const jinxyLinks = [
+                    "https://en.wikipedia.org/wiki/Flat_bean",
+                    "https://www.reddit.com/r/Netherlands/comments/1ghutfw/what_are_some_crucial_traditional_dutch/",
+                    "https://www.thedutchtable.com/2010/10/bitterballen-dutch-deep-fried-gravy.html"
+                ];
+                window.location.href = jinxyLinks[Math.floor(Math.random()*jinxyLinks.length)];
+                return;
             }
             if(guess==="CERFY"){ 
-                const urls=["https://www.youtube.com/watch?v=aBquLj4kLxQ","https://www.youtube.com/watch?v=4npQAvzrND0","https://www.imdb.com/title/tt1990216/","https://www.youtube.com/watch?v=_ngkB44qaQw"];
-                window.location.href=urls[Math.floor(Math.random()*urls.length)];
-                return; 
+                const cerfyLinks = [
+                    "https://www.youtube.com/watch?v=aBquLj4kLxQ",
+                    "https://www.youtube.com/watch?v=4npQAvzrND0",
+                    "https://www.imdb.com/title/tt1990216/",
+                    "https://www.youtube.com/watch?v=_ngkB44qaQw"
+                ];
+                window.location.href = cerfyLinks[Math.floor(Math.random()*cerfyLinks.length)];
+                return;
             }
-            if(guess==="GLABS"){ window.location.href="https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19"; return; }
-
+            if(guess==="GLABS"){ 
+                window.location.href = "https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19";
+                return;
+            }
             if(checkProfanity(guess)){ window.location.href="https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/"; return; }
 
             totalGames++; localStorage.setItem('glabble_totalGames', totalGames);
             document.getElementById('games-count').textContent=totalGames;
 
-            if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return; }
+            if(!(await isValidWord(guess))){
+                alert("THAT AIN'T NO REAL WERD, IDJIOT!");
+                clearCurrentRow(); // <-- automatically clears invalid guess
+                return; 
+            }
 
             for(let i=0;i<5;i++){const letter=cells[i].textContent.toUpperCase();if(letter===targetWord[i]){cells[i].classList.add('green');updateAlphabet(letter,'green');}else if(targetWord.includes(letter)){cells[i].classList.add('yellow');updateAlphabet(letter,'yellow');}else{cells[i].classList.add('gray');updateAlphabet(letter,'gray');} }
             
@@ -312,9 +306,32 @@ async function handleKey(key){
             }
             else if(currentRow===5){
                 setBlur(true);
-                showLosingGif();
+                const loseGifs = [
+                    "6289320449545116130", // Stressed
+                    "24576363", // Mad Super
+                    "5408039",  // Noob
+                    "1639610178022128587", // Ffs Baby
+                    "1514012758219765433"  // Chip Nxk
+                ];
+                const gifContainer=document.getElementById('lose-gif-container');
+                const randomId=loseGifs[Math.floor(Math.random()*loseGifs.length)];
+                gifContainer.innerHTML="";
+                const embedDiv=document.createElement("div");
+                embedDiv.className="tenor-gif-embed";
+                embedDiv.setAttribute("data-postid",randomId);
+                embedDiv.setAttribute("data-share-method","host");
+                embedDiv.setAttribute("data-aspect-ratio","1");
+                embedDiv.setAttribute("data-width","100%");
+                gifContainer.appendChild(embedDiv);
+                const script=document.createElement("script");
+                script.type="text/javascript";
+                script.async=true;
+                script.src="https://tenor.com/embed.js";
+                gifContainer.appendChild(script);
+                fadeIn(gifContainer);
+
                 setTimeout(()=>{
-                    fadeOut(document.getElementById('lose-gif-container'));
+                    fadeOut(gifContainer);
                     document.getElementById('lose-message').style.display='block';
                 }, 4000);
                 document.getElementById('lose-poo-left').style.display='block';
