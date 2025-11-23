@@ -10,8 +10,11 @@ html, body {
     margin:0; padding:0; height:100%; background:black; color:#206cd2; font-family:'GROBOLD', sans-serif;
     display:flex; justify-content:center; align-items:center; flex-direction:column; overflow-x:hidden;
 }
-#game-wrapper { display:flex; flex-direction:column; align-items:center; transition: filter 0.3s ease; }
+
+#game-wrapper { display:flex; flex-direction:column; align-items:center; transition: filter 0.3s ease; z-index:1; }
+
 h1 { font-size:72px; margin-bottom:20px; color:#206cd2; }
+
 #game-container { display:grid; grid-template-rows:repeat(6,60px); grid-gap:10px; margin-bottom:20px; }
 .row { display:grid; grid-template-columns:repeat(5,60px); grid-gap:10px; }
 .cell { width:60px;height:60px;border:2px solid #206cd2; display:flex; justify-content:center; align-items:center; font-size:36px; text-transform:uppercase; color:#206cd2; background:black; user-select:none; }
@@ -19,35 +22,30 @@ h1 { font-size:72px; margin-bottom:20px; color:#206cd2; }
 .green { background-color:#206cd2; color:black; }
 .yellow { background-color:#ffc107; color:black; }
 .gray { background-color:#555; color:black; }
+
 #alphabet { display:flex; flex-wrap:wrap; max-width:420px; justify-content:center; gap:5px; margin-top:10px; }
 .letter-box { width:30px;height:30px; border:1px solid #206cd2; display:flex; justify-content:center; align-items:center; text-transform:uppercase; color:#206cd2; font-size:18px; user-select:none; }
+
 #mobile-input { position:absolute; opacity:0; width:1px; height:1px; }
 
-#win-gif-container,#lose-gif-container { display:none; opacity:0; transition: opacity 1s ease; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9999; width:450px; max-width:90%; }
+/* --- Overlay for GIF/message --- */
+#overlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    display:flex; justify-content:center; align-items:center; flex-direction:column;
+    z-index:1000; pointer-events:none;
+}
+.overlay-content { text-align:center; opacity:0; transition:opacity 1s ease; }
+.overlay-gif { max-width:90%; max-height:50vh; height:auto; margin-bottom:10px; }
 
-#win-message,#lose-message { display:none; opacity:0; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:84px; color:white; text-align:center; z-index:9998; background:linear-gradient(90deg,#206cd2,#1a0033); background-size:300% 100%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:gradientMove 0.8s linear infinite alternate; transition: opacity 1s ease; }
-
+/* Winning/Losing messages */
+#win-message, #lose-message { font-size:8vw; background:linear-gradient(90deg,#206cd2,#1a0033); background-size:300% 100%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:gradientMove 0.8s linear infinite alternate; }
 @keyframes gradientMove {0%{background-position:0% 50%}50%{background-position:150% 50%}100%{background-position:300% 50%}}
 
+/* Poops */
 .lose-poo { position:fixed; top:10px; font-size:180px; display:none; z-index:10000; user-select:none; pointer-events:none; }
 #lose-poo-left { left:20px; } #lose-poo-right { right:20px; }
 .falling-poo { position:absolute; pointer-events:none; user-select:none; animation-name:fall; animation-timing-function:linear; }
 @keyframes fall { 0% { transform: translateY(-200px) rotate(0deg); } 100% { transform: translateY(100vh) rotate(720deg); } }
-
-/* --- MOBILE-FRIENDLY ADJUSTMENTS --- */
-#win-gif-container, #lose-gif-container {
-    width: 90%;
-    max-width: 400px;
-    height: auto;
-    max-height: 60vh;
-}
-#win-message, #lose-message {
-    font-size: 10vw;
-}
-@media(max-height:600px) {
-    #win-gif-container, #lose-gif-container { top:45%; }
-    #win-message, #lose-message { top:48%; }
-}
 </style>
 </head>
 <body>
@@ -67,12 +65,13 @@ h1 { font-size:72px; margin-bottom:20px; color:#206cd2; }
 </div>
 
 <input type="text" id="mobile-input" maxlength="5" />
-<div id="win-gif-container"></div>
-<div id="lose-gif-container"></div>
 
-<script type="text/javascript" async src="https://tenor.com/embed.js"></script>
-<div id="win-message">Good job idjiot, you wen</div>
-<div id="lose-message">Try again, idjiot</div>
+<!-- Overlay for GIF/message -->
+<div id="overlay">
+    <img id="overlay-gif" class="overlay-gif" src="" alt="GIF" />
+    <div id="win-message" class="overlay-content">Good job idjiot, you wen</div>
+    <div id="lose-message" class="overlay-content">Try again, idjiot</div>
+</div>
 
 <script>
 const targetWord="HOSKY";
@@ -93,29 +92,18 @@ function updateAlphabet(letter,state){ const box=document.getElementById(`letter
 function updateActiveCell(){ document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active')); const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell'); if(currentCol<5) cells[currentCol].classList.add('active'); }
 
 function startPoopRain(count=50){ for(let i=0;i<count;i++){ const poop=document.createElement('div'); poop.classList.add('falling-poo'); poop.textContent='💩'; poop.style.left=Math.random()*(window.innerWidth-100)+'px'; poop.style.fontSize=(80+Math.random()*120)+'px'; poop.style.animationDuration=(5+Math.random()*5)+'s'; document.body.appendChild(poop); poop.addEventListener('animationend',()=>poop.remove()); } }
+
 function setBlur(enable){ gameWrapper.style.filter = enable?'blur(3px)':'none'; }
-function fadeIn(el){ el.style.display='block'; requestAnimationFrame(()=>el.style.opacity='1'); }
+
+function fadeIn(el){ el.style.opacity='0'; el.style.display='block'; requestAnimationFrame(()=>el.style.opacity='1'); }
 function fadeOut(el){ el.style.opacity='0'; setTimeout(()=>el.style.display='none',1000); }
 
 async function isValidWord(word){ word=word.toLowerCase(); if(extraWords.includes(word.toUpperCase())) return true; try{ const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`); return res.ok;}catch(e){return false;}}
 
-function showGif(containerId,gifArray){
-    const container=document.getElementById(containerId);
+function showGif(imgElementId,gifArray){
     const randomId=gifArray[Math.floor(Math.random()*gifArray.length)];
-    container.innerHTML="";
-    const div=document.createElement("div");
-    div.className="tenor-gif-embed";
-    div.setAttribute("data-postid",randomId);
-    div.setAttribute("data-share-method","host");
-    div.setAttribute("data-aspect-ratio","1");
-    div.setAttribute("data-width","100%");
-    container.appendChild(div);
-    const script=document.createElement("script");
-    script.type="text/javascript";
-    script.async=true;
-    script.src="https://tenor.com/embed.js";
-    container.appendChild(script);
-    fadeIn(container);
+    document.getElementById(imgElementId).src=`https://media.tenor.com/images/${randomId}/tenor.gif`;
+    fadeIn(document.getElementById(imgElementId));
 }
 
 async function handleKey(key){
@@ -137,13 +125,13 @@ async function handleKey(key){
 
             if(guess===targetWord){
                 setBlur(true);
-                showGif('win-gif-container',winningGifs);
+                showGif('overlay-gif',winningGifs);
                 fadeIn(document.getElementById('win-message'));
                 startPoopRain(80);
                 setTimeout(()=>{ window.location.href="https://hosky.io"; },4500);
             } else if(currentRow===5){
                 setBlur(true);
-                showGif('lose-gif-container',losingGifs);
+                showGif('overlay-gif',losingGifs);
                 fadeIn(document.getElementById('lose-message'));
                 setTimeout(()=>{ window.location.href="https://hosky.io"; },4500);
             }
