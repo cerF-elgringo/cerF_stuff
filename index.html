@@ -99,6 +99,16 @@ h1 {
     height: 1px;
 }
 
+#corner-red {
+    position: fixed;
+    top: 5px;
+    right: 10px;
+    font-size: 24px;
+    color: red;
+    z-index: 10001;
+    user-select: none;
+}
+
 #win-gif-container, #lose-gif-container {
     display: none;
     opacity: 0;
@@ -183,6 +193,8 @@ h1 {
 </head>
 <body>
 
+<div id="corner-red">1</div>
+
 <div id="game-wrapper">
     <div id="lose-poo-left" class="lose-poo">💩</div>
     <div id="lose-poo-right" class="lose-poo">💩</div>
@@ -266,25 +278,10 @@ function updateAlphabet(letter,state){
     else{box.style.backgroundColor='#555'; box.style.color='black';}
 }
 
-// keep last filled cell active
 function updateActiveCell(){
-    const cells = document.getElementById(`row${currentRow}`).querySelectorAll('.cell');
     document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
+    const cells = document.getElementById(`row${currentRow}`).querySelectorAll('.cell');
     if(currentCol < 5) cells[currentCol].classList.add('active');
-    else if(currentCol === 5) cells[4].classList.add('active');
-}
-
-// FIXED BACKSPACE FOR RANDOM CLICKS
-function handleBackspace(cells){
-    if(cells[currentCol] && cells[currentCol].textContent !== "") {
-        // delete current cell
-        cells[currentCol].textContent = "";
-    } else if(currentCol > 0){
-        // move left and delete previous cell
-        currentCol--;
-        cells[currentCol].textContent = "";
-    }
-    updateActiveCell();
 }
 
 function startPoopRain(count=50){
@@ -321,6 +318,15 @@ async function isValidWord(word){
     word = word.toLowerCase();
     if(extraWords.includes(word.toUpperCase())) return true;
     try{ const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`); return res.ok; }catch(e){return false;}
+}
+
+// ❗ FIXED BACKSPACE LOGIC FOR DESKTOP + MOBILE
+function handleBackspace(cells){
+    if(cells[currentCol].textContent === "" && currentCol > 0){
+        currentCol--;
+    }
+    cells[currentCol].textContent = "";
+    updateActiveCell();
 }
 
 function showWinningGif(){
@@ -391,7 +397,7 @@ async function handleKey(key){
     else if(/^[a-zA-Z]$/.test(key)){
         if(currentCol < 5){
             cells[currentCol].textContent = key.toUpperCase();
-            currentCol++;
+            if(currentCol < 4) currentCol++;
             updateActiveCell();
         }
     }
@@ -399,17 +405,21 @@ async function handleKey(key){
 
 // MOBILE INPUT
 const mobileInput = document.getElementById('mobile-input');
-if(window.innerWidth <= 500){
-    mobileInput.addEventListener('input', e=>{
-        const value = e.target.value.toUpperCase();
-        if(value.length>0){
+mobileInput.addEventListener('input', e=>{
+    const value = e.target.value.toUpperCase();
+    if(value.length > 0){
+        if(value === "\b"){ // backspace detection
+            const row = document.getElementById(`row${currentRow}`);
+            handleBackspace(row.querySelectorAll('.cell'));
+        } else {
             handleKey(value[value.length-1]);
-            mobileInput.value = '';
         }
-    });
-} else {
-    document.addEventListener('keydown', e=>handleKey(e.key));
-}
+        mobileInput.value = '';
+    }
+});
+
+// DESKTOP KEYDOWN
+document.addEventListener('keydown', e=>handleKey(e.key));
 
 updateActiveCell();
 </script>
