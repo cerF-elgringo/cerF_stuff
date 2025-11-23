@@ -242,6 +242,8 @@ function createCells(row, rowIndex) {
                 currentCol = i;
                 updateActiveCell();
                 document.getElementById('mobile-input').focus();
+                // Scroll to row when clicked
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
     }
@@ -315,6 +317,8 @@ function handleBackspace(cells){
     }
     cells[currentCol].textContent = "";
     updateActiveCell();
+    // Scroll active row into view on mobile
+    document.getElementById(`row${currentRow}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function showWinningGif(){
@@ -359,27 +363,20 @@ async function handleKey(key){
                 setBlur(true);
                 showWinningGif();
                 startPoopRain(80);
-                setTimeout(()=>{
-                    fadeOut(document.getElementById('win-gif-container'));
-                    document.getElementById('win-message').style.display='block';
-                    setTimeout(()=>setBlur(false),2000);
-                },2800);
+                setTimeout(()=>{ fadeOut(document.getElementById('win-gif-container')); document.getElementById('win-message').style.display='block'; setTimeout(()=>setBlur(false),2000); },2800);
                 setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
             } else if(currentRow===5){
                 setBlur(true);
                 fadeIn(document.getElementById('lose-gif-container'));
-                setTimeout(()=>{
-                    fadeOut(document.getElementById('lose-gif-container'));
-                    document.getElementById('lose-message').style.display='block';
-                    document.getElementById('lose-poo-left').style.display='block';
-                    document.getElementById('lose-poo-right').style.display='block';
-                    startLosePoopRain(40);
-                    setTimeout(()=>setBlur(false),2000);
-                },2800);
+                setTimeout(()=>{ fadeOut(document.getElementById('lose-gif-container')); document.getElementById('lose-message').style.display='block'; document.getElementById('lose-poo-left').style.display='block'; document.getElementById('lose-poo-right').style.display='block'; startLosePoopRain(40); setTimeout(()=>setBlur(false),2000); },2800);
                 setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
             }
 
-            currentRow++; currentCol=0; updateActiveCell();
+            currentRow++; currentCol=0; 
+            updateActiveCell();
+
+            // Scroll next row into view on mobile
+            document.getElementById(`row${currentRow}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     } 
     else if(/^[a-zA-Z]$/.test(key)){
@@ -387,6 +384,9 @@ async function handleKey(key){
             cells[currentCol].textContent = key.toUpperCase();
             if(currentCol < 4) currentCol++;
             updateActiveCell();
+
+            // Scroll active row into view on mobile
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
 }
@@ -404,6 +404,12 @@ mobileInput.addEventListener('input', e=>{
         }
         mobileInput.value = '';
     }
+});
+
+// Auto-focus input on page load (mobile-friendly)
+window.addEventListener('load', ()=>{
+    mobileInput.focus();
+    document.getElementById(`row${currentRow}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
 // DESKTOP KEYDOWN
