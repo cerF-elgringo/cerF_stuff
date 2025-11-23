@@ -230,6 +230,14 @@ function loadGameState(){
         if(gameOver) cells.forEach(c => c.classList.add('locked'));
     }
 
+    // --- Restore last profane word if Back button is used ---
+    if(state.lastProfaneWord && state.lastProfaneRow !== undefined){
+        const cells = document.getElementById(`row${state.lastProfaneRow}`).querySelectorAll('.cell');
+        for(let i=0;i<5;i++){
+            cells[i].textContent = state.lastProfaneWord[i] || '';
+        }
+    }
+
     updateActiveCell();
 
     // Blur input if game is over
@@ -278,20 +286,44 @@ async function processGuess(guess){
     const cells=row.querySelectorAll('.cell');
 
     // --- PROFANITY CHECK ---
- if(checkProfanity(guess)){
-    // Fill the row with the profane word
-    for(let i=0;i<5;i++){cells[i].textContent=guess[i]||'';}
-    
-    // Treat as a valid guess: move to next row and save state
+ // --- PROFANITY CHECK WITH MULTIPLE REDIRECTS ---
+if(checkProfanity(guess)){
+    // Fill the row with the guessed word
+    for(let i=0;i<5;i++){cells[i].textContent = guess[i] || '';}
+
+    // Save game state including the profane word
+    const state = {
+        currentRow,
+        currentCol: 0,
+        board: [],
+        lastProfaneWord: guess,
+        lastProfaneRow: currentRow // store which row it was on
+    };
+    for(let r=0;r<6;r++){
+        const cells = document.getElementById(`row${r}`).querySelectorAll('.cell');
+        state.board.push(Array.from(cells).map(c => c.textContent));
+    }
+    sessionStorage.setItem('glabble_state', JSON.stringify(state));
+
+    // Show popup warning before redirect
+    alert("whag da hail?");
+
+    // Move to next row
     currentRow++; 
-    currentCol=0; 
+    currentCol = 0; 
     updateActiveCell(); 
     saveGameState();
-    
-    // Redirect after filling the row
-    window.location.href = "https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/";
+
+    // Redirect after showing the alert
+    const profanityRedirects = [
+        "https://www.dictionary.com/browse/pottymouth",
+        "https://www.ancestry.com/last-name-meaning/skustin",
+        "https://en.wikipedia.org/wiki/Bad_Dog!",
+        "https://www.pgonly.net/login"
+    ];
+    window.location.href = profanityRedirects[Math.floor(Math.random()*profanityRedirects.length)];
     return;
-    }
+}
 
     // Fill letters
     for(let i=0;i<5;i++){cells[i].textContent=guess[i]||'';}
@@ -389,6 +421,8 @@ function showWinningGif(){
 }
 
 updateActiveCell();
+
+
 
 // --- ORIGINAL SCRIPT END ---
 </script>
