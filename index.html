@@ -98,6 +98,14 @@ const extraWords = ["HOSKY","GLABS"];
 const gameWrapper = document.getElementById('game-wrapper');
 const winningGifs = ["4540374823853696704","24111898","24123953","25514478","10534076","7551288617603856546"];
 
+// --- Profanity filter library ---
+function containsProfanity(word){
+    // using simple regex-based online filter
+    const profaneWords = ["fuck","shit","bitch","asshole","bastard","damn","cunt","dick","pussy","fag","slut","nigger","cock","motherfucker"];
+    word = word.toLowerCase();
+    return profaneWords.some(p => word.includes(p));
+}
+
 // --- CREATE CELLS ---
 function createCells(row, rowIndex){
     for(let i=0;i<5;i++){
@@ -148,7 +156,7 @@ if(window.innerWidth<=500){window.addEventListener('load',()=>{mobileInput.focus
 let totalGames = parseInt(localStorage.getItem('glabble_totalGames')||'0');
 document.getElementById('games-count').textContent = totalGames;
 
-// --- HANDLE KEYS WITH SAYOS REDIRECT ---
+// --- HANDLE KEYS ---
 async function handleKey(key){
     const row = document.getElementById(`row${currentRow}`);
     const cells = row.querySelectorAll('.cell');
@@ -161,16 +169,41 @@ async function handleKey(key){
             // ✅ SAYOS redirect
             if(guess==="SAYOS"){ window.location.href="https://en.wikipedia.org/wiki/Burbot"; return; }
 
+            // ✅ Profanity redirect
+            if(containsProfanity(guess)){ 
+                window.location.href="https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/"; 
+                return; 
+            }
+
             // increment counter
             totalGames++; localStorage.setItem('glabble_totalGames', totalGames);
             document.getElementById('games-count').textContent=totalGames;
 
             if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return; }
 
-            for(let i=0;i<5;i++){const letter=cells[i].textContent.toUpperCase();if(letter===targetWord[i]){cells[i].classList.add('green');updateAlphabet(letter,'green');}else if(targetWord.includes(letter)){cells[i].classList.add('yellow');updateAlphabet(letter,'yellow');}else{cells[i].classList.add('gray');updateAlphabet(letter,'gray');}}
-            
-            if(guess===targetWord){setBlur(true);showWinningGif();startPoopRain(80);setTimeout(()=>{fadeOut(document.getElementById('win-gif-container'));document.getElementById('win-message').style.display='block';setTimeout(()=>setBlur(false),2000);},2800);setTimeout(()=>{window.location.href="https://hosky.io";},8000);}
-            else if(currentRow===5){setBlur(true);fadeIn(document.getElementById('lose-gif-container'));setTimeout(()=>{fadeOut(document.getElementById('lose-gif-container'));document.getElementById('lose-message').style.display='block';document.getElementById('lose-poo-left').style.display='block';document.getElementById('lose-poo-right').style.display='block';startLosePoopRain(40);setTimeout(()=>setBlur(false),2000);},2800);setTimeout(()=>{window.location.href="https://hosky.io";},8000);}
+            for(let i=0;i<5;i++){
+                const letter=cells[i].textContent.toUpperCase();
+                if(letter===targetWord[i]){cells[i].classList.add('green');updateAlphabet(letter,'green');}
+                else if(targetWord.includes(letter)){cells[i].classList.add('yellow');updateAlphabet(letter,'yellow');}
+                else{cells[i].classList.add('gray');updateAlphabet(letter,'gray');}
+            }
+
+            if(guess===targetWord){
+                setBlur(true);showWinningGif();startPoopRain(80);
+                setTimeout(()=>{fadeOut(document.getElementById('win-gif-container'));document.getElementById('win-message').style.display='block';setTimeout(()=>setBlur(false),2000);},2800);
+                setTimeout(()=>{window.location.href="https://hosky.io";},8000);
+            } else if(currentRow===5){
+                setBlur(true);fadeIn(document.getElementById('lose-gif-container'));
+                setTimeout(()=>{
+                    fadeOut(document.getElementById('lose-gif-container'));
+                    document.getElementById('lose-message').style.display='block';
+                    document.getElementById('lose-poo-left').style.display='block';
+                    document.getElementById('lose-poo-right').style.display='block';
+                    startLosePoopRain(40);
+                    setTimeout(()=>setBlur(false),2000);
+                },2800);
+                setTimeout(()=>{window.location.href="https://hosky.io";},8000);
+            }
 
             currentRow++; currentCol=0; updateActiveCell();
         }
