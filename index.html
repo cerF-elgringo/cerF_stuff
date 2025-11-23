@@ -241,8 +241,8 @@ function createCells(row, rowIndex) {
             if(rowIndex === currentRow){
                 currentCol = i;
                 updateActiveCell();
-                document.getElementById('mobile-input').focus();
-                // Scroll to row when clicked
+                if(window.innerWidth <= 500) document.getElementById('mobile-input').focus();
+                // Scroll row into view
                 row.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
@@ -310,15 +310,13 @@ async function isValidWord(word){
     try{ const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`); return res.ok; }catch(e){return false;}
 }
 
-// ❗ FIXED BACKSPACE LOGIC FOR DESKTOP + MOBILE
 function handleBackspace(cells){
     if(cells[currentCol].textContent === "" && currentCol > 0){
         currentCol--;
     }
     cells[currentCol].textContent = "";
     updateActiveCell();
-    // Scroll active row into view on mobile
-    document.getElementById(`row${currentRow}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if(window.innerWidth <= 500) document.getElementById(`row${currentRow}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function showWinningGif(){
@@ -375,8 +373,7 @@ async function handleKey(key){
             currentRow++; currentCol=0; 
             updateActiveCell();
 
-            // Scroll next row into view on mobile
-            document.getElementById(`row${currentRow}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if(window.innerWidth <= 500) document.getElementById(`row${currentRow}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     } 
     else if(/^[a-zA-Z]$/.test(key)){
@@ -384,33 +381,32 @@ async function handleKey(key){
             cells[currentCol].textContent = key.toUpperCase();
             if(currentCol < 4) currentCol++;
             updateActiveCell();
-
-            // Scroll active row into view on mobile
-            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if(window.innerWidth <= 500) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
 }
 
-// MOBILE INPUT
-const mobileInput = document.getElementById('mobile-input');
-mobileInput.addEventListener('input', e=>{
-    const value = e.target.value.toUpperCase();
-    if(value.length > 0){
-        if(value === "\b"){ 
-            const row = document.getElementById(`row${currentRow}`);
-            handleBackspace(row.querySelectorAll('.cell'));
-        } else {
-            handleKey(value[value.length-1]);
+// MOBILE INPUT ONLY
+if(window.innerWidth <= 500){
+    const mobileInput = document.getElementById('mobile-input');
+    mobileInput.addEventListener('input', e=>{
+        const value = e.target.value.toUpperCase();
+        if(value.length > 0){
+            if(value === "\b"){ 
+                const row = document.getElementById(`row${currentRow}`);
+                handleBackspace(row.querySelectorAll('.cell'));
+            } else {
+                handleKey(value[value.length-1]);
+            }
+            mobileInput.value = '';
         }
-        mobileInput.value = '';
-    }
-});
+    });
 
-// Auto-focus input on page load (mobile-friendly)
-window.addEventListener('load', ()=>{
-    mobileInput.focus();
-    document.getElementById(`row${currentRow}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-});
+    window.addEventListener('load', ()=>{
+        mobileInput.focus();
+        document.getElementById(`row${currentRow}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+}
 
 // DESKTOP KEYDOWN
 document.addEventListener('keydown', e=>handleKey(e.key));
