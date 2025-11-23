@@ -155,6 +155,35 @@ function checkProfanity(word){
     return profaneWords.some(p => lower.includes(p));
 }
 
+// --- Redirect links ---
+const sayosLinks = [
+    "https://en.wikipedia.org/wiki/Burbot",
+    "https://www.mazda.com/en/",
+    "https://www.youtube.com/watch?v=K1fyza5BN-0",
+    "https://www.hkmaps.hk/viewer.html",
+    "https://www.youtube.com/watch?v=YJFNdIJnrHY",
+    "https://www.spanishdict.com/translate/sayos"
+];
+const vegasLinks = [
+    "https://x.com/HoskyDevVegas/status/1947043091216494826",
+    "https://www.dreamvacations.com/vacation/destinations/all",
+    "https://www.youtube.com/watch?v=1DUaR0zBGgQ",
+    "https://www.christinascucina.com/beans-on-toast-the-proper-british-way-recipe-by-a-brit/",
+    "https://www.urbandictionary.com/define.php?term=foo-foo%20drink"
+];
+const jinxyLinks = [
+    "https://en.wikipedia.org/wiki/Flat_bean",
+    "https://www.reddit.com/r/Netherlands/comments/1ghutfw/what_are_some_crucial_traditional_dutch/",
+    "https://www.thedutchtable.com/2010/10/bitterballen-dutch-deep-fried-gravy.html"
+];
+const cerfyLinks = [
+    "https://www.youtube.com/watch?v=aBquLj4kLxQ",
+    "https://www.youtube.com/watch?v=4npQAvzrND0",
+    "https://www.imdb.com/title/tt1990216/",
+    "https://www.youtube.com/watch?v=_ngkB44qaQw"
+];
+const glabsLink = "https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19";
+
 const targetWord = "HOSKY";
 let currentRow = 0;
 let currentCol = 0;
@@ -222,7 +251,7 @@ if(window.innerWidth<=500){window.addEventListener('load',()=>{mobileInput.focus
 let totalGames = parseInt(localStorage.getItem('glabble_totalGames')||'0');
 document.getElementById('games-count').textContent = totalGames;
 
-// --- HANDLE KEYS WITH SAYOS, VEGAS, AND PROFANITY ---
+// --- HANDLE KEYS WITH REDIRECTS AND PROFANITY ---
 async function handleKey(key){
     const row = document.getElementById(`row${currentRow}`);
     const cells = row.querySelectorAll('.cell');
@@ -232,8 +261,11 @@ async function handleKey(key){
         if(Array.from(cells).every(c => c.textContent!=="")){
             const guess=Array.from(cells).map(c=>c.textContent).join('').toUpperCase();
 
-            if(guess==="SAYOS"){ window.location.href="https://en.wikipedia.org/wiki/Burbot"; return; }
-            if(guess==="VEGAS"){ window.location.href="https://x.com/HoskyDevVegas/status/1947043091216494826"; return; }
+            if(guess==="SAYOS"){ window.location.href = sayosLinks[Math.floor(Math.random()*sayosLinks.length)]; return; }
+            if(guess==="VEGAS"){ window.location.href = vegasLinks[Math.floor(Math.random()*vegasLinks.length)]; return; }
+            if(guess==="JINXY"){ window.location.href = jinxyLinks[Math.floor(Math.random()*jinxyLinks.length)]; return; }
+            if(guess==="CERFY"){ window.location.href = cerfyLinks[Math.floor(Math.random()*cerfyLinks.length)]; return; }
+            if(guess==="GLABS"){ window.location.href = glabsLink; return; }
             if(checkProfanity(guess)){ window.location.href="https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/"; return; }
 
             totalGames++; localStorage.setItem('glabble_totalGames', totalGames);
