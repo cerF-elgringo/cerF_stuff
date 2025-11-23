@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>GLABDLE</title>
 <link href="https://fonts.cdnfonts.com/css/grobold" rel="stylesheet">
-
 <style>
 html, body {
     margin: 0;
@@ -159,85 +158,25 @@ h1 {
     100% { transform: translateY(100vh) rotate(720deg); }
 }
 
-/* --- MOBILE-SPECIFIC OVERRIDES --- */
+/* --- MOBILE DISPLAY OVERRIDES --- */
 @media (max-width: 500px) {
-    #game-container {
-        grid-template-rows: repeat(6, 40px);
-        grid-gap: 5px;
-    }
-
-    .row {
-        grid-template-columns: repeat(5, 40px);
-        grid-gap: 5px;
-    }
-
-    .cell {
-        width: 40px;
-        height: 40px;
-        font-size: 24px;
-    }
-
-    #alphabet {
-        gap: 3px;
-    }
-
-    .letter-box {
-        width: 25px;
-        height: 25px;
-        font-size: 14px;
-    }
-
-    #win-gif-container, #lose-gif-container {
-        width: 90vw;
-        max-width: 90vw;
-    }
-
-    #win-message, #lose-message {
-        font-size: 32px;
-    }
-
-    .lose-poo {
-        font-size: 100px;
-        top: 5px;
-    }
+    #game-container { grid-template-rows: repeat(6, 40px); grid-gap: 5px; }
+    .row { grid-template-columns: repeat(5, 40px); grid-gap: 5px; }
+    .cell { width: 40px; height: 40px; font-size: 24px; }
+    #alphabet { gap: 3px; }
+    .letter-box { width: 25px; height: 25px; font-size: 14px; }
+    #win-gif-container, #lose-gif-container { width: 90vw; max-width: 90vw; }
+    #win-message, #lose-message { font-size: 32px; }
+    .lose-poo { font-size: 100px; top: 5px; }
 }
-
-/* --- EXTRA SMALL PHONES (320px - 360px) --- */
 @media (max-width: 360px) {
-    #game-container {
-        grid-template-rows: repeat(6, 35px);
-        grid-gap: 4px;
-    }
-
-    .row {
-        grid-template-columns: repeat(5, 35px);
-        grid-gap: 4px;
-    }
-
-    .cell {
-        width: 35px;
-        height: 35px;
-        font-size: 20px;
-    }
-
-    #alphabet {
-        gap: 2px;
-    }
-
-    .letter-box {
-        width: 22px;
-        height: 22px;
-        font-size: 12px;
-    }
-
-    #win-message, #lose-message {
-        font-size: 28px;
-    }
-
-    .lose-poo {
-        font-size: 80px;
-        top: 5px;
-    }
+    #game-container { grid-template-rows: repeat(6, 35px); grid-gap: 4px; }
+    .row { grid-template-columns: repeat(5, 35px); grid-gap: 4px; }
+    .cell { width: 35px; height: 35px; font-size: 20px; }
+    #alphabet { gap: 2px; }
+    .letter-box { width: 22px; height: 22px; font-size: 12px; }
+    #win-message, #lose-message { font-size: 28px; }
+    .lose-poo { font-size: 80px; top: 5px; }
 }
 </style>
 </head>
@@ -383,7 +322,11 @@ function showWinningGif(){
     fadeIn(gifContainer);
 }
 
+let rowLocked = false; // LOCK ROW WHILE PROCESSING
+
 async function handleKey(key){
+    if(rowLocked) return;
+
     const row = document.getElementById(`row${currentRow}`);
     const cells = row.querySelectorAll('.cell');
 
@@ -391,8 +334,10 @@ async function handleKey(key){
         if(currentCol>0){currentCol--;cells[currentCol].textContent='';updateActiveCell();}
     } else if(key==='Enter'){
         if(currentCol===5){
+            rowLocked = true;
+
             const guess = Array.from(cells).map(c=>c.textContent).join('');
-            if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return; }
+            if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); rowLocked=false; return; }
 
             for(let i=0;i<5;i++){
                 const letter = cells[i].textContent.toUpperCase();
@@ -411,7 +356,6 @@ async function handleKey(key){
                     setTimeout(()=>setBlur(false),2000);
                 },2800);
 
-                // Redirect after 8 seconds
                 setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
 
             } else if(currentRow===5){
@@ -426,11 +370,11 @@ async function handleKey(key){
                     setTimeout(()=>setBlur(false),2000);
                 },2800);
 
-                // Redirect after 8 seconds
                 setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
             }
 
             currentRow++; currentCol=0; updateActiveCell();
+            rowLocked = false;
         }
     } else if(/^[a-zA-Z]$/.test(key)){
         if(currentCol<5){cells[currentCol].textContent=key.toUpperCase(); currentCol++; updateActiveCell();}
@@ -466,6 +410,5 @@ document.addEventListener('keydown', e=>handleKey(e.key));
 
 updateActiveCell();
 </script>
-
 </body>
 </html>
