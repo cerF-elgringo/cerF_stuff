@@ -7,7 +7,6 @@
 <link href="https://fonts.cdnfonts.com/css/grobold" rel="stylesheet">
 
 <style>
-/* --- ORIGINAL CSS --- */
 html, body {
     margin: 0;
     padding: 0;
@@ -438,10 +437,32 @@ async function handleKey(key){
     }
 }
 
-document.addEventListener('keydown', e=>handleKey(e.key));
+// --- DEBOUNCED MOBILE INPUT FIX ---
 const mobileInput = document.getElementById('mobile-input');
-mobileInput.addEventListener('input', ()=>{const value=mobileInput.value.toUpperCase(); if(value.length>0){handleKey(value[value.length-1]); mobileInput.value='';}});
-mobileInput.addEventListener('keydown', e=>{handleKey(e.key); setTimeout(()=>mobileInput.value='',0);});
+let handlingMobileKey = false;
+
+mobileInput.addEventListener('input', () => {
+    if (handlingMobileKey) return;
+    handlingMobileKey = true;
+
+    const value = mobileInput.value.toUpperCase();
+    if (value.length > 0) {
+        handleKey(value[value.length - 1]);
+        mobileInput.value = '';
+    }
+
+    setTimeout(() => { handlingMobileKey = false; }, 50);
+});
+
+mobileInput.addEventListener('keydown', e => {
+    if (handlingMobileKey) return;
+    handlingMobileKey = true;
+
+    handleKey(e.key);
+    setTimeout(() => { mobileInput.value = ''; handlingMobileKey = false; }, 50);
+});
+
+document.addEventListener('keydown', e=>handleKey(e.key));
 
 updateActiveCell();
 </script>
