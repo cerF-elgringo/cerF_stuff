@@ -99,17 +99,6 @@ h1 {
     height: 1px;
 }
 
-/* --- MOBILE TEST INDICATOR --- */
-#mobile-indicator {
-    position: fixed;
-    top: 5px;
-    right: 5px;
-    color: red;
-    font-size: 24px;
-    z-index: 10001;
-}
-
-/* --- REST OF STYLES UNCHANGED --- */
 #win-gif-container, #lose-gif-container {
     display: none;
     opacity: 0;
@@ -170,7 +159,6 @@ h1 {
     100% { transform: translateY(100vh) rotate(720deg); }
 }
 
-/* --- MOBILE OVERRIDES --- */
 @media (max-width: 500px) {
     #game-container { grid-template-rows: repeat(6, 40px); grid-gap: 5px; }
     .row { grid-template-columns: repeat(5, 40px); grid-gap: 5px; }
@@ -195,8 +183,6 @@ h1 {
 </head>
 <body>
 
-<div id="mobile-indicator">2</div>
-
 <div id="game-wrapper">
     <div id="lose-poo-left" class="lose-poo">💩</div>
     <div id="lose-poo-right" class="lose-poo">💩</div>
@@ -218,10 +204,9 @@ h1 {
 <input type="text" id="mobile-input" maxlength="5" />
 
 <div id="win-gif-container"></div>
-
 <div id="lose-gif-container">
   <div class="tenor-gif-embed" data-postid="6289320449545116130" data-share-method="host" data-aspect-ratio="1.32447" data-width="100%">
-    <a href="https://tenor.com/view/stressed-stressed-out-im-stressed-gif-6289320449545116130">Stressed GIF</a> from <a href="https://tenor.com/search/stressed-gifs">Stressed GIFs</a>
+    <a href="https://tenor.com/view/stressed-stressed-out-im-stressed-gif-6289320449545116130">Stressed GIF</a>
   </div>
 </div>
 
@@ -251,6 +236,7 @@ function createCells(row, rowIndex) {
         const cell = document.createElement('div');
         cell.classList.add('cell');
         row.appendChild(cell);
+
         cell.addEventListener('click', () => {
             if(rowIndex === currentRow){
                 currentCol = i;
@@ -280,10 +266,25 @@ function updateAlphabet(letter,state){
     else{box.style.backgroundColor='#555'; box.style.color='black';}
 }
 
+// keep last filled cell active
 function updateActiveCell(){
-    document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
     const cells = document.getElementById(`row${currentRow}`).querySelectorAll('.cell');
+    document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
     if(currentCol < 5) cells[currentCol].classList.add('active');
+    else if(currentCol === 5) cells[4].classList.add('active');
+}
+
+// FIXED BACKSPACE FOR RANDOM CLICKS
+function handleBackspace(cells){
+    if(cells[currentCol] && cells[currentCol].textContent !== "") {
+        // delete current cell
+        cells[currentCol].textContent = "";
+    } else if(currentCol > 0){
+        // move left and delete previous cell
+        currentCol--;
+        cells[currentCol].textContent = "";
+    }
+    updateActiveCell();
 }
 
 function startPoopRain(count=50){
@@ -346,13 +347,10 @@ async function handleKey(key){
     const cells = row.querySelectorAll('.cell');
 
     if(key==='Backspace'){
-        if(currentCol>0){
-            currentCol--; 
-            cells[currentCol].textContent='';
-            updateActiveCell();
-        }
-    } else if(key==='Enter'){
-        if(currentCol === 5){ // only submit when row full
+        handleBackspace(cells);
+    } 
+    else if(key==='Enter'){
+        if(Array.from(cells).every(c => c.textContent !== '')){ 
             const guess = Array.from(cells).map(c=>c.textContent).join('');
             if(!(await isValidWord(guess))){ alert("THAT AIN'T NO REAL WERD, IDJIOT!"); return; }
 
@@ -364,7 +362,9 @@ async function handleKey(key){
             }
 
             if(guess===targetWord){
-                setBlur(true); showWinningGif(); startPoopRain(80);
+                setBlur(true);
+                showWinningGif();
+                startPoopRain(80);
                 setTimeout(()=>{
                     fadeOut(document.getElementById('win-gif-container'));
                     document.getElementById('win-message').style.display='block';
@@ -372,7 +372,8 @@ async function handleKey(key){
                 },2800);
                 setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
             } else if(currentRow===5){
-                setBlur(true); fadeIn(document.getElementById('lose-gif-container'));
+                setBlur(true);
+                fadeIn(document.getElementById('lose-gif-container'));
                 setTimeout(()=>{
                     fadeOut(document.getElementById('lose-gif-container'));
                     document.getElementById('lose-message').style.display='block';
@@ -384,11 +385,10 @@ async function handleKey(key){
                 setTimeout(()=>{ window.location.href = "https://hosky.io"; }, 8000);
             }
 
-            currentRow++; 
-            currentCol = 0; 
-            updateActiveCell();
+            currentRow++; currentCol=0; updateActiveCell();
         }
-    } else if(/^[a-zA-Z]$/.test(key)){
+    } 
+    else if(/^[a-zA-Z]$/.test(key)){
         if(currentCol < 5){
             cells[currentCol].textContent = key.toUpperCase();
             currentCol++;
@@ -397,18 +397,19 @@ async function handleKey(key){
     }
 }
 
-// --- FIXED MOBILE INPUT ---
+// MOBILE INPUT
 const mobileInput = document.getElementById('mobile-input');
-mobileInput.addEventListener('input', e=>{
-    const value = e.target.value.toUpperCase();
-    if(value.length>0){
-        handleKey(value[value.length-1]);
-        mobileInput.value = '';
-    }
-});
-
-// Desktop uses normal keydown
-document.addEventListener('keydown', e=>handleKey(e.key));
+if(window.innerWidth <= 500){
+    mobileInput.addEventListener('input', e=>{
+        const value = e.target.value.toUpperCase();
+        if(value.length>0){
+            handleKey(value[value.length-1]);
+            mobileInput.value = '';
+        }
+    });
+} else {
+    document.addEventListener('keydown', e=>handleKey(e.key));
+}
 
 updateActiveCell();
 </script>
