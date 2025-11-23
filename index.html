@@ -39,7 +39,7 @@ h1 {
     font-size: 72px; 
     margin-bottom: 20px; 
     color: #206cd2;
-    text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; /* green glow */
+    text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
 }
 
 #game-container { display: grid; grid-template-rows: repeat(6, 60px); grid-gap: 10px; margin-bottom: 20px; }
@@ -71,7 +71,7 @@ h1 {
     -webkit-background-clip: text; 
     -webkit-text-fill-color: transparent; 
     animation: gradientMove 0.8s linear infinite alternate; 
-    filter: drop-shadow(0 0 6px #ff69b4) drop-shadow(0 0 12px #ff69b4); /* subtle pink glow */
+    filter: drop-shadow(0 0 6px #ff69b4) drop-shadow(0 0 12px #ff69b4);
 }
 
 @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 150% 50%; } 100% { background-position: 300% 50%; } }
@@ -134,11 +134,7 @@ h1 {
 <input type="text" id="mobile-input" maxlength="5" />
 
 <div id="win-gif-container"></div>
-<div id="lose-gif-container">
-  <div class="tenor-gif-embed" data-postid="6289320449545116130" data-share-method="host" data-aspect-ratio="1.32447" data-width="100%">
-    <a href="https://tenor.com/view/stressed-stressed-out-im-stressed-gif-6289320449545116130">Stressed GIF</a>
-  </div>
-</div>
+<div id="lose-gif-container"></div>
 
 <div id="win-message">GOOD JOB IDJIOT</div>
 <div id="lose-message">Try again, idjiot</div>
@@ -155,41 +151,15 @@ function checkProfanity(word){
     return profaneWords.some(p => lower.includes(p));
 }
 
-// --- Redirect links ---
-const sayosLinks = [
-    "https://en.wikipedia.org/wiki/Burbot",
-    "https://www.mazda.com/en/",
-    "https://www.youtube.com/watch?v=K1fyza5BN-0",
-    "https://www.hkmaps.hk/viewer.html",
-    "https://www.youtube.com/watch?v=YJFNdIJnrHY",
-    "https://www.spanishdict.com/translate/sayos"
-];
-const vegasLinks = [
-    "https://x.com/HoskyDevVegas/status/1947043091216494826",
-    "https://www.dreamvacations.com/vacation/destinations/all",
-    "https://www.youtube.com/watch?v=1DUaR0zBGgQ",
-    "https://www.christinascucina.com/beans-on-toast-the-proper-british-way-recipe-by-a-brit/",
-    "https://www.urbandictionary.com/define.php?term=foo-foo%20drink"
-];
-const jinxyLinks = [
-    "https://en.wikipedia.org/wiki/Flat_bean",
-    "https://www.reddit.com/r/Netherlands/comments/1ghutfw/what_are_some_crucial_traditional_dutch/",
-    "https://www.thedutchtable.com/2010/10/bitterballen-dutch-deep-fried-gravy.html"
-];
-const cerfyLinks = [
-    "https://www.youtube.com/watch?v=aBquLj4kLxQ",
-    "https://www.youtube.com/watch?v=4npQAvzrND0",
-    "https://www.imdb.com/title/tt1990216/",
-    "https://www.youtube.com/watch?v=_ngkB44qaQw"
-];
-const glabsLink = "https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19";
-
 const targetWord = "HOSKY";
 let currentRow = 0;
 let currentCol = 0;
 const extraWords = ["HOSKY","GLABS"];
 const gameWrapper = document.getElementById('game-wrapper');
-const winningGifs = ["4540374823853696704","24111898","24123953","25514478","10534076","7551288617603856546"];
+
+// --- WIN/LOSE GIFS ---
+const winningGifs = ["4540374823853696704","24111898","24123953","10534076","7551288617603856546"];
+const losingGifs = ["6289320449545116130","24576363","5408039","1639610178022128587","1514012758219765433"];
 
 // --- CREATE CELLS ---
 function createCells(row, rowIndex){
@@ -238,7 +208,45 @@ function fadeIn(el){el.style.display='block';requestAnimationFrame(()=>el.style.
 function fadeOut(el){el.style.opacity='0';setTimeout(()=>el.style.display='none',1000);}
 async function isValidWord(word){word=word.toLowerCase();if(extraWords.includes(word.toUpperCase())) return true;try{const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);return res.ok;}catch(e){return false;}}
 function handleBackspace(cells){if(cells[currentCol].textContent==="" && currentCol>0) currentCol--;cells[currentCol].textContent="";updateActiveCell();if(window.innerWidth<=500) setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);}
-function showWinningGif(){const gifContainer=document.getElementById('win-gif-container');const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];gifContainer.innerHTML="";const embedDiv=document.createElement("div");embedDiv.className="tenor-gif-embed";embedDiv.setAttribute("data-postid",randomId);embedDiv.setAttribute("data-share-method","host");embedDiv.setAttribute("data-aspect-ratio","1");embedDiv.setAttribute("data-width","100%");gifContainer.appendChild(embedDiv);const script=document.createElement("script");script.type="text/javascript";script.async=true;script.src="https://tenor.com/embed.js";gifContainer.appendChild(script);fadeIn(gifContainer);}
+
+// --- WIN/LOSE GIF EMBED ---
+function showWinningGif(){
+    const gifContainer=document.getElementById('win-gif-container');
+    const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];
+    gifContainer.innerHTML="";
+    const embedDiv=document.createElement("div");
+    embedDiv.className="tenor-gif-embed";
+    embedDiv.setAttribute("data-postid",randomId);
+    embedDiv.setAttribute("data-share-method","host");
+    embedDiv.setAttribute("data-aspect-ratio","1");
+    embedDiv.setAttribute("data-width","100%");
+    gifContainer.appendChild(embedDiv);
+    const script=document.createElement("script");
+    script.type="text/javascript";
+    script.async=true;
+    script.src="https://tenor.com/embed.js";
+    gifContainer.appendChild(script);
+    fadeIn(gifContainer);
+}
+
+function showLosingGif(){
+    const gifContainer=document.getElementById('lose-gif-container');
+    const randomId=losingGifs[Math.floor(Math.random()*losingGifs.length)];
+    gifContainer.innerHTML="";
+    const embedDiv=document.createElement("div");
+    embedDiv.className="tenor-gif-embed";
+    embedDiv.setAttribute("data-postid",randomId);
+    embedDiv.setAttribute("data-share-method","host");
+    embedDiv.setAttribute("data-aspect-ratio","1");
+    embedDiv.setAttribute("data-width","100%");
+    gifContainer.appendChild(embedDiv);
+    const script=document.createElement("script");
+    script.type="text/javascript";
+    script.async=true;
+    script.src="https://tenor.com/embed.js";
+    gifContainer.appendChild(script);
+    fadeIn(gifContainer);
+}
 
 // --- MOBILE + DESKTOP INPUT ---
 const mobileInput=document.getElementById('mobile-input');
@@ -251,7 +259,7 @@ if(window.innerWidth<=500){window.addEventListener('load',()=>{mobileInput.focus
 let totalGames = parseInt(localStorage.getItem('glabble_totalGames')||'0');
 document.getElementById('games-count').textContent = totalGames;
 
-// --- HANDLE KEYS WITH REDIRECTS AND PROFANITY ---
+// --- HANDLE KEYS WITH SAYOS, VEGAS, AND PROFANITY ---
 async function handleKey(key){
     const row = document.getElementById(`row${currentRow}`);
     const cells = row.querySelectorAll('.cell');
@@ -261,11 +269,28 @@ async function handleKey(key){
         if(Array.from(cells).every(c => c.textContent!=="")){
             const guess=Array.from(cells).map(c=>c.textContent).join('').toUpperCase();
 
-            if(guess==="SAYOS"){ window.location.href = sayosLinks[Math.floor(Math.random()*sayosLinks.length)]; return; }
-            if(guess==="VEGAS"){ window.location.href = vegasLinks[Math.floor(Math.random()*vegasLinks.length)]; return; }
-            if(guess==="JINXY"){ window.location.href = jinxyLinks[Math.floor(Math.random()*jinxyLinks.length)]; return; }
-            if(guess==="CERFY"){ window.location.href = cerfyLinks[Math.floor(Math.random()*cerfyLinks.length)]; return; }
-            if(guess==="GLABS"){ window.location.href = glabsLink; return; }
+            if(guess==="SAYOS"){ 
+                const urls=["https://en.wikipedia.org/wiki/Burbot","https://www.mazda.com/en/","https://www.youtube.com/watch?v=K1fyza5BN-0","https://www.hkmaps.hk/viewer.html","https://www.youtube.com/watch?v=YJFNdIJnrHY","https://www.spanishdict.com/translate/sayos"];
+                window.location.href=urls[Math.floor(Math.random()*urls.length)];
+                return; 
+            }
+            if(guess==="VEGAS"){ 
+                const urls=["https://x.com/HoskyDevVegas/status/1947043091216494826","https://www.dreamvacations.com/vacation/destinations/all","https://www.youtube.com/watch?v=1DUaR0zBGgQ","https://www.christinascucina.com/beans-on-toast-the-proper-british-way-recipe-by-a-brit/","https://www.urbandictionary.com/define.php?term=foo-foo%20drink"];
+                window.location.href=urls[Math.floor(Math.random()*urls.length)];
+                return; 
+            }
+            if(guess==="JINXY"){ 
+                const urls=["https://en.wikipedia.org/wiki/Flat_bean","https://www.reddit.com/r/Netherlands/comments/1ghutfw/what_are_some_crucial_traditional_dutch/","https://www.thedutchtable.com/2010/10/bitterballen-dutch-deep-fried-gravy.html"];
+                window.location.href=urls[Math.floor(Math.random()*urls.length)];
+                return; 
+            }
+            if(guess==="CERFY"){ 
+                const urls=["https://www.youtube.com/watch?v=aBquLj4kLxQ","https://www.youtube.com/watch?v=4npQAvzrND0","https://www.imdb.com/title/tt1990216/","https://www.youtube.com/watch?v=_ngkB44qaQw"];
+                window.location.href=urls[Math.floor(Math.random()*urls.length)];
+                return; 
+            }
+            if(guess==="GLABS"){ window.location.href="https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19"; return; }
+
             if(checkProfanity(guess)){ window.location.href="https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/"; return; }
 
             totalGames++; localStorage.setItem('glabble_totalGames', totalGames);
@@ -287,7 +312,7 @@ async function handleKey(key){
             }
             else if(currentRow===5){
                 setBlur(true);
-                fadeIn(document.getElementById('lose-gif-container'));
+                showLosingGif();
                 setTimeout(()=>{
                     fadeOut(document.getElementById('lose-gif-container'));
                     document.getElementById('lose-message').style.display='block';
