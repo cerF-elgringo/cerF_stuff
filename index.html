@@ -18,8 +18,8 @@ html, body {
     align-items: center;
     font-family: 'GROBOLD', sans-serif;
     color: #206cd2;
-    overflow: hidden;
     flex-direction: column;
+    overflow-x: hidden;
 }
 
 h1 {
@@ -51,6 +51,7 @@ h1 {
     text-transform: uppercase;
     color: #206cd2;
     background-color: black;
+    user-select: none;
 }
 
 .green { background-color: #206cd2; color: black; }
@@ -63,7 +64,6 @@ h1 {
     max-width: 420px;
     justify-content: center;
     gap: 5px;
-    margin-top: 20px;
 }
 
 .letter-box {
@@ -91,26 +91,12 @@ h1 {
     100% { transform: translateY(110vh); }
 }
 
-/* Hidden input for mobile typing */
-#mobile-entry {
+/* Hidden input to capture mobile keyboard input */
+#mobile-input {
     position: absolute;
-    opacity: 0.01; /* nearly invisible but still focusable */
+    opacity: 0;
     width: 1px;
     height: 1px;
-}
-
-/* Tap-to-type overlay for mobile */
-#tap-to-type {
-    position: absolute;
-    bottom: 150px;
-    font-family: 'GROBOLD', sans-serif;
-    color: #206cd2;
-    font-size: 24px;
-    background: rgba(0,0,0,0.5);
-    padding: 8px 16px;
-    border-radius: 10px;
-    cursor: pointer;
-    user-select: none;
 }
 </style>
 </head>
@@ -128,11 +114,7 @@ h1 {
 
 <div id="alphabet"></div>
 
-<!-- Hidden input for mobile typing -->
-<input type="text" id="mobile-entry" maxlength="5" />
-
-<!-- Tap-to-type button -->
-<div id="tap-to-type">Tap Here to Type</div>
+<input type="text" id="mobile-input" maxlength="5" />
 
 <script>
 const targetWord = "HOSKY";
@@ -145,9 +127,15 @@ function createCells(row) {
         const cell = document.createElement('div');
         cell.classList.add('cell');
         row.appendChild(cell);
+
+        // Make cells tappable on mobile
+        cell.addEventListener('click', () => {
+            document.getElementById('mobile-input').focus();
+        });
     }
 }
 
+// Initialize grid
 for (let i = 0; i < 6; i++) {
     createCells(document.getElementById(`row${i}`));
 }
@@ -198,8 +186,8 @@ function startPoopRain(count = 50) {
     });
 }
 
-// Handle key input (desktop and mobile)
-function handleKeyInput(key) {
+// Handle key input
+function handleKey(key) {
     const row = document.getElementById(`row${currentRow}`);
     const cells = row.querySelectorAll('.cell');
 
@@ -210,7 +198,7 @@ function handleKeyInput(key) {
         }
     } else if (key === 'Enter') {
         if (currentCol === 5) {
-            let guess = Array.from(cells).map(c => c.textContent).join('');
+            const guess = Array.from(cells).map(c => c.textContent).join('');
             for (let i = 0; i < 5; i++) {
                 const letter = cells[i].textContent.toUpperCase();
                 if (letter === targetWord[i]) {
@@ -219,10 +207,7 @@ function handleKeyInput(key) {
                     updateAlphabet(letter, 'green');
                 } else if (targetWord.includes(letter)) {
                     cells[i].classList.add('yellow');
-                    if (!usedLetters[letter]) {
-                        usedLetters[letter] = 'yellow';
-                        updateAlphabet(letter, 'yellow');
-                    }
+                    if (!usedLetters[letter]) updateAlphabet(letter, 'yellow');
                 } else {
                     cells[i].classList.add('gray');
                     usedLetters[letter] = 'gray';
@@ -231,7 +216,6 @@ function handleKeyInput(key) {
             }
             currentRow++;
             currentCol = 0;
-
             if (guess === targetWord) {
                 startPoopRain(80).then(() => {
                     alert("GJ IDJIOT U GOT IT WEN WEN WEN");
@@ -249,33 +233,23 @@ function handleKeyInput(key) {
 }
 
 // Desktop key handling
-document.addEventListener('keydown', (e) => {
-    handleKeyInput(e.key);
-});
+document.addEventListener('keydown', e => handleKey(e.key));
 
-// Mobile handling
-const mobileInput = document.getElementById('mobile-entry');
+// Mobile key handling
+const mobileInput = document.getElementById('mobile-input');
 mobileInput.addEventListener('input', () => {
     const value = mobileInput.value.toUpperCase();
+    const row = document.getElementById(`row${currentRow}`);
+    const cells = row.querySelectorAll('.cell');
     for (let i = 0; i < 5; i++) {
-        const row = document.getElementById(`row${currentRow}`);
-        const cells = row.querySelectorAll('.cell');
         cells[i].textContent = value[i] || '';
     }
     currentCol = value.length;
 });
 
-mobileInput.addEventListener('keydown', (e) => {
-    handleKeyInput(e.key);
-    setTimeout(() => {
-        mobileInput.value = '';
-    }, 0);
-});
-
-// Tap to focus input on mobile
-const tapBtn = document.getElementById('tap-to-type');
-tapBtn.addEventListener('click', () => {
-    mobileInput.focus();
+mobileInput.addEventListener('keydown', e => {
+    handleKey(e.key);
+    setTimeout(() => mobileInput.value = '', 0);
 });
 </script>
 
