@@ -222,7 +222,7 @@ if(window.innerWidth<=500){window.addEventListener('load',()=>{mobileInput.focus
 let totalGames = parseInt(localStorage.getItem('glabble_totalGames')||'0');
 document.getElementById('games-count').textContent = totalGames;
 
-// --- HANDLE KEYS WITH SAYOS AND PROFANITY ---
+// --- HANDLE KEYS WITH SAYOS, VEGAS, AND PROFANITY ---
 async function handleKey(key){
     const row = document.getElementById(`row${currentRow}`);
     const cells = row.querySelectorAll('.cell');
@@ -233,6 +233,7 @@ async function handleKey(key){
             const guess=Array.from(cells).map(c=>c.textContent).join('').toUpperCase();
 
             if(guess==="SAYOS"){ window.location.href="https://en.wikipedia.org/wiki/Burbot"; return; }
+            if(guess==="VEGAS"){ window.location.href="https://x.com/HoskyDevVegas/status/1947043091216494826"; return; }
             if(checkProfanity(guess)){ window.location.href="https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/"; return; }
 
             totalGames++; localStorage.setItem('glabble_totalGames', totalGames);
