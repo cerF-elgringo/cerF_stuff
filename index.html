@@ -23,7 +23,7 @@ html, body {
 }
 
 h1 {
-    font-size: 48px; /* 50% bigger than default */
+    font-size: 48px;
     margin-bottom: 20px;
 }
 
@@ -94,8 +94,23 @@ h1 {
 /* Hidden input for mobile typing */
 #mobile-entry {
     position: absolute;
-    opacity: 0;
-    pointer-events: none;
+    opacity: 0.01; /* nearly invisible but still focusable */
+    width: 1px;
+    height: 1px;
+}
+
+/* Tap-to-type overlay for mobile */
+#tap-to-type {
+    position: absolute;
+    bottom: 150px;
+    font-family: 'GROBOLD', sans-serif;
+    color: #206cd2;
+    font-size: 24px;
+    background: rgba(0,0,0,0.5);
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
 }
 </style>
 </head>
@@ -114,7 +129,10 @@ h1 {
 <div id="alphabet"></div>
 
 <!-- Hidden input for mobile typing -->
-<input type="text" id="mobile-entry" maxlength="5" autofocus />
+<input type="text" id="mobile-entry" maxlength="5" />
+
+<!-- Tap-to-type button -->
+<div id="tap-to-type">Tap Here to Type</div>
 
 <script>
 const targetWord = "HOSKY";
@@ -235,7 +253,7 @@ document.addEventListener('keydown', (e) => {
     handleKeyInput(e.key);
 });
 
-// Mobile handling: forward input from hidden input to grid
+// Mobile handling
 const mobileInput = document.getElementById('mobile-entry');
 mobileInput.addEventListener('input', () => {
     const value = mobileInput.value.toUpperCase();
@@ -251,17 +269,19 @@ mobileInput.addEventListener('keydown', (e) => {
     handleKeyInput(e.key);
     setTimeout(() => {
         mobileInput.value = '';
-    }, 0); // clear after processing
+    }, 0);
 });
 
-// Focus hidden input on mobile
-if (/Mobi|Android/i.test(navigator.userAgent)) {
+// Tap to focus input on mobile
+const tapBtn = document.getElementById('tap-to-type');
+tapBtn.addEventListener('click', () => {
     mobileInput.focus();
-}
+});
 </script>
 
 </body>
 </html>
+
 
 
 
