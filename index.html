@@ -727,19 +727,17 @@ updateActiveCell();
 window.addEventListener('load', () => {
     const savedState = sessionStorage.getItem('glabble_state');
     if(savedState){
-        // Hide mode selection overlay
         document.getElementById('mode-select-overlay').style.display = 'none';
-        // Show game wrapper
         gameWrapper.style.display = 'flex';
-        // Load saved game
         loadGameState();
-        // Refocus mobile input if on mobile
-        if(window.innerWidth <= 500){
+
+        if(window.innerWidth <= 500 && !gameOver){ // <-- only focus if game NOT over
             mobileInput.focus();
             setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
         }
     }
 });
+
 // --- LOSE BUTTONS ---
 // --- LOSE BUTTONS ---
 function addLoseButtons() {
