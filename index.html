@@ -318,6 +318,46 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
 <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
 
 <script>
+
+// Detect if page is loaded normally (not via back/forward)
+window.addEventListener('load', () => {
+    if(!performance.getEntriesByType("navigation")[0].type.includes("back_forward")){
+        // Normal refresh → clear saved game
+        sessionStorage.removeItem('glabble_state');
+        document.getElementById('mode-select-overlay').style.display = 'flex';
+        gameWrapper.style.display = 'none';
+    }
+});
+
+// Back/forward navigation restores previous game
+window.addEventListener('pageshow', (event) => {
+    if(event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward"){
+        const savedState = sessionStorage.getItem('glabble_state');
+        if(savedState){
+            // Reset UI elements that should not persist
+            document.getElementById('win-message').style.display = 'none';
+            document.getElementById('lose-message').style.display = 'none';
+            document.getElementById('win-gif-container').style.opacity = 0;
+            document.getElementById('win-gif-container').style.display = 'none';
+            document.getElementById('lose-gif-container').style.opacity = 0;
+            document.getElementById('lose-gif-container').style.display = 'none';
+            document.getElementById('lose-poo-left').style.display = 'none';
+            document.getElementById('lose-poo-right').style.display = 'none';
+            setBlur(false); // remove blur
+            // Hide mode overlay & show game
+            document.getElementById('mode-select-overlay').style.display = 'none';
+            gameWrapper.style.display = 'flex';
+            // Load board
+            loadGameState();
+            if(window.innerWidth <= 500){
+                mobileInput.focus();
+                setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
+            }
+        }
+    }
+});
+
+
 // --- GAME MODE VARIABLES ---
 let selectedMode = 'HOSKY'; // default
 let targetWord = "HOSKY";   // must be let, can change for NORMAL
@@ -663,6 +703,24 @@ function showWinningGif(){
 }
 
 updateActiveCell();
+// --- RESTORE SAVED GAME ON PAGE LOAD ---
+window.addEventListener('load', () => {
+    const savedState = sessionStorage.getItem('glabble_state');
+    if(savedState){
+        // Hide mode selection overlay
+        document.getElementById('mode-select-overlay').style.display = 'none';
+        // Show game wrapper
+        gameWrapper.style.display = 'flex';
+        // Load saved game
+        loadGameState();
+        // Refocus mobile input if on mobile
+        if(window.innerWidth <= 500){
+            mobileInput.focus();
+            setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
+        }
+    }
+});
+
 </script>
 </body>
 </html>
