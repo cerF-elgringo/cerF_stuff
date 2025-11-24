@@ -20,7 +20,8 @@ html, body {
 }
 
 #game-wrapper {
-    display: flex; flex-direction: column; align-items: center;
+    display: none; /* hidden until mode selected */
+    flex-direction: column; align-items: center;
     background-color: rgba(0,0,0,0.5);
     min-width: 340px; max-width: 90vw; padding: 20px;
     border-radius: 10px;
@@ -51,7 +52,7 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
     position: fixed; 
     top: 50%; 
     left: 50%; 
-    transform: translate(-50%, -50%) rotate(0deg); /* allows wiggle */
+    transform: translate(-50%, -50%) rotate(0deg);
     font-size: 84px; 
     line-height: 1.1;
     text-align: center; 
@@ -90,31 +91,38 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
 .falling-poo { position: absolute; pointer-events: none; user-select: none; animation-name: fall; animation-timing-function: linear; }
 @keyframes fall { 0% { transform: translateY(-200px) rotate(0deg); } 100% { transform: translateY(100vh) rotate(720deg); } }
 
-@media (max-width: 500px) {
-    #game-wrapper { background-color: rgba(0,0,0,0.6); }
-    #game-container { grid-template-rows: repeat(6, 40px); grid-gap: 5px; }
-    .row { grid-template-columns: repeat(5, 40px); grid-gap: 5px; }
-    .cell { width: 40px; height: 40px; font-size: 24px; }
-    #alphabet { gap: 3px; }
-    .letter-box { width: 25px; height: 25px; font-size: 14px; }
-    #win-message, #lose-message { font-size: 32px; top:48%; }
-    .lose-poo { font-size: 100px; top: 5px; }
-}
-
-@media (max-width: 360px) {
-    #game-container { grid-template-rows: repeat(6, 35px); grid-gap: 4px; }
-    .row { grid-template-columns: repeat(5, 35px); grid-gap: 4px; }
-    .cell { width: 35px; height: 35px; font-size: 20px; }
-    #alphabet { gap: 2px; }
-    .letter-box { width: 22px; height: 22px; font-size: 12px; }
-    #win-message, #lose-message { font-size: 28px; top:48%; }
-    .lose-poo { font-size: 80px; top: 5px; }
-}
-
 #games-counter { position: fixed; top: 10px; right: 10px; font-size: 14px; color: #206cd2; z-index: 10001; font-family: 'GROBOLD', sans-serif; }
+
+/* MODE BUTTONS */
+#mode-select-overlay {
+    position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 100000;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    gap: 20px;
+}
+.mode-btn {
+    font-family:'GROBOLD', sans-serif; font-size:32px; color:#206cd2; background:black; border:2px solid #206cd2; padding:15px 30px; cursor:pointer;
+    text-transform:uppercase; box-shadow:0 0 0 #ff9900; transition:0.3s;
+}
+.mode-btn:hover { box-shadow:0 0 15px #ff9900; color:#ffc107; border-color:#ffc107; }
+.mode-title {
+    font-size:48px;
+    color: #00ff00; /* bright green */
+    text-shadow: 0 0 5px #ff9900, 0 0 10px #ff9900; /* subtle orange glow */
+}
+
+@media (max-width:500px){.mode-btn{font-size:24px;padding:10px 20px}.mode-title{font-size:32px}}
 </style>
 </head>
 <body>
+
+<div id="mode-select-overlay">
+    <h1 style="font-size:72px; color:#206cd2; text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; margin-bottom:20px;">GLABDLE</h1>
+    <h2 class="mode-title">Choose Mode</h2>
+    <div style="display:flex; gap:20px;">
+        <button class="mode-btn" id="hosky-btn">HOSKY Words</button>
+        <button class="mode-btn" id="normal-btn">NORMAL Words</button>
+    </div>
+</div>
 
 <div id="game-wrapper">
     <div id="lose-poo-left" class="lose-poo">💩</div>
@@ -139,22 +147,74 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
 <div id="win-message">GOOD JOB IDJIOT</div>
 <div id="lose-message">Try again, idjiot</div>
 
+<!-- DEBUG SECRET WORD -->
+  <div id="debug-word" style="position: fixed; top: 10px; right: 10px; font-size: 16px; color: #ff9900; z-index: 10002; font-family: 'GROBOLD', sans-serif; display: none;">
+      SECRET: <span id="debug-word-text"></span>
+  </div>
+
 <div id="games-counter">Total games submitted: <span id="games-count">0</span></div>
 
 <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
 
 <script>
-const profaneWords = ["fuck","shit","bitch","bastard","dick","cunt","asshole","nigger","faggot","slut","whore","cock","pussy","douche"];
-function checkProfanity(word){return profaneWords.some(p=>word.toLowerCase().includes(p));}
-
-const targetWord = "HOSKY";
-let currentRow = 0;
-let currentCol = 0;
-let gameOver = false;
+// --- GAME MODE VARIABLES ---
+let selectedMode = 'HOSKY'; // default
+let targetWord = "HOSKY";   // must be let, can change for NORMAL
 const extraWords = ["HOSKY","GLABS"];
 const triggerWords = ["SAYOS","VEGAS","JINXY","CERFY","GLABS"];
 const gameWrapper = document.getElementById('game-wrapper');
 const winningGifs = ["4540374823853696704","24111898","24123953","10534076","7551288617603856546"];
+async function isValidWord(word){
+// ALWAYS allow the secret word
+    if (word.toUpperCase() === targetWord.toUpperCase()) {
+        return true;
+    }
+    word = word.toLowerCase();
+    if(extraWords.includes(word.toUpperCase())) return true;  // allow custom words like HOSKY, GLABS
+    try {
+        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        return res.ok;  // ✅ returns true if word exists in dictionary
+    } catch(e) {
+        return false; // API failed → treat as invalid
+    }
+}
+const profaneWords = ["fuck","shit","bitch","bastard","dick","cunt","asshole","nigger","faggot","slut","whore","cock","pussy","douche"];
+function checkProfanity(word){return profaneWords.some(p=>word.toLowerCase().includes(p));}
+
+// --- MODE BUTTONS LOGIC (BOARD VISIBLE AFTER CLICK) ---
+document.getElementById('hosky-btn').addEventListener('click', () => {
+    selectedMode = 'HOSKY';
+    targetWord = "HOSKY";
+    document.getElementById('mode-select-overlay').style.display = 'none';
+    gameWrapper.style.display = 'flex';
+});
+
+document.getElementById('normal-btn').addEventListener('click', () => {
+    selectedMode = 'NORMAL';
+    document.getElementById('mode-select-overlay').style.display = 'none';
+    gameWrapper.style.display = 'flex';
+
+    // Fetch random 5-letter word
+    fetch('https://random-word-api.vercel.app/api?words=1&length=5')
+        .then(res => res.json())
+        .then(data => {
+            // API returns array: ["apple"]
+            targetWord = data[0].toUpperCase();
+            console.log("NORMAL target word:", targetWord);
+
+            const debugDiv = document.getElementById('debug-word');
+            debugDiv.style.display = 'block';
+            document.getElementById('debug-word-text').textContent = targetWord;
+        })
+        .catch(err => {
+            console.error("Error fetching normal word:", err);
+            targetWord = "APPLE"; // fallback
+
+            const debugDiv = document.getElementById('debug-word');
+            debugDiv.style.display = 'block';
+            document.getElementById('debug-word-text').textContent = targetWord;
+        });
+});
 
 // --- CREATE CELLS ---
 function createCells(row,rowIndex){
@@ -176,37 +236,56 @@ for(let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
     box.textContent=l;
     alphabetContainer.appendChild(box);
 }
-
 // --- GAME FUNCTIONS ---
-function updateAlphabet(letter,state){const box=document.getElementById(`letter-${letter}`);if(!box)return;if(state==='green'){box.style.backgroundColor='#206cd2'; box.style.color='black';}else if(state==='yellow'){box.style.backgroundColor='#ffc107'; box.style.color='black';}else{box.style.backgroundColor='#555'; box.style.color='black';}}
-function updateActiveCell(){document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell');if(currentCol<5) cells[currentCol].classList.add('active'); if(window.innerWidth <= 500){setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);}}
-function startPoopRain(count=16){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-100)+'px';poop.style.fontSize=(110+Math.random()*120)+'px';poop.style.animationDuration=(10+Math.random()*6)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
-function startLosePoopRain(count=12){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-80)+'px';poop.style.fontSize=(60+Math.random()*80)+'px';poop.style.animationDuration=(5+Math.random()*5)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
+function updateAlphabet(letter,state){
+    const box=document.getElementById(`letter-${letter}`);
+    if(!box) return;
+    if(state==='green'){box.style.backgroundColor='#206cd2'; box.style.color='black';}
+    else if(state==='yellow'){box.style.backgroundColor='#ffc107'; box.style.color='black';}
+    else{box.style.backgroundColor='#555'; box.style.color='black';}
+}
+
+function updateActiveCell(){
+    document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));
+    const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell');
+    if(currentCol<5) cells[currentCol].classList.add('active');
+    if(window.innerWidth <= 500){setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);}
+}
+
 function setBlur(enable){gameWrapper.style.filter=enable?'blur(5px)':'none';}
 function fadeIn(el){el.style.display='block';requestAnimationFrame(()=>el.style.opacity='1');}
 function fadeOut(el){el.style.opacity='0';setTimeout(()=>el.style.display='none',1000);}
-async function isValidWord(word){word=word.toLowerCase();if(extraWords.includes(word.toUpperCase())) return true; try{const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);return res.ok;}catch(e){return false;}}
+function startPoopRain(count=16){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-100)+'px';poop.style.fontSize=(110+Math.random()*120)+'px';poop.style.animationDuration=(10+Math.random()*6)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
+function startLosePoopRain(count=12){for(let i=0;i<count;i++){const poop=document.createElement('div');poop.classList.add('falling-poo');poop.textContent='💩';poop.style.left=Math.random()*(window.innerWidth-80)+'px';poop.style.fontSize=(60+Math.random()*80)+'px';poop.style.animationDuration=(5+Math.random()*5)+'s';document.body.appendChild(poop);poop.addEventListener('animationend',()=>poop.remove());}}
 
 // --- SESSION STORAGE ---
 function saveGameState(){
     const state={currentRow,currentCol,board:[],gameOver};
-    for(let r=0;r<6;r++){const cells=document.getElementById(`row${r}`).querySelectorAll('.cell');state.board.push(Array.from(cells).map(c=>({letter:c.textContent,classes:c.className}))); }
-    // Save alphabet colors
+    for(let r=0;r<6;r++){
+        const cells=document.getElementById(`row${r}`).querySelectorAll('.cell');
+        state.board.push(Array.from(cells).map(c=>({letter:c.textContent,classes:c.className})));
+    }
     const alphabetState={};
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{const box=document.getElementById(`letter-${l}`); if(box) alphabetState[l]=box.style.backgroundColor;});
     state.alphabet = alphabetState;
     sessionStorage.setItem('glabble_state',JSON.stringify(state));
 }
+
 function loadGameState(){
     const state = JSON.parse(sessionStorage.getItem('glabble_state')); if(!state) return;
     currentRow = state.currentRow; currentCol = state.currentCol; gameOver = state.gameOver || false;
-    for(let r=0;r<6;r++){const cells=document.getElementById(`row${r}`).querySelectorAll('.cell');cells.forEach((c,i)=>{c.textContent=state.board[r][i].letter;c.className=state.board[r][i].classes;});}
+    for(let r=0;r<6;r++){
+        const cells=document.getElementById(`row${r}`).querySelectorAll('.cell');
+        cells.forEach((c,i)=>{c.textContent=state.board[r][i].letter;c.className=state.board[r][i].classes;});
+    }
     if(state.alphabet){for(let l in state.alphabet){const box=document.getElementById(`letter-${l}`); if(box) box.style.backgroundColor=state.alphabet[l];}}
     updateActiveCell(); if(gameOver) mobileInput.blur();
 }
 
 // --- INPUT ---
 const mobileInput=document.getElementById('mobile-input');
+let currentRow=0,currentCol=0,gameOver=false;
+
 mobileInput.addEventListener('input',e=>{const value=e.target.value.toUpperCase();if(value.length>0){handleKey(value[value.length-1]);mobileInput.value='';}});
 document.addEventListener('keydown',e=>handleKey(e.key));
 if(window.innerWidth<=500){window.addEventListener('load',()=>{mobileInput.focus(); setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);});}
@@ -215,9 +294,6 @@ if(window.innerWidth<=500){window.addEventListener('load',()=>{mobileInput.focus
 let totalGames=parseInt(localStorage.getItem('glabble_totalGames')||'0');
 document.getElementById('games-count').textContent=totalGames;
 
-// --- BACK/FORWARD HANDLING ---
-window.addEventListener('pageshow', e=>{if(performance.navigation.type!==1){loadGameState();}});
-window.addEventListener('beforeunload', e=>{if(performance.navigation.type===1){sessionStorage.removeItem('glabble_state');}});
 
 // --- HANDLE KEYS ---
 async function handleKey(key){
@@ -251,124 +327,110 @@ const redirects={
 };
 
 async function processGuess(guess){
-    const row=document.getElementById(`row${currentRow}`);
-    const cells=row.querySelectorAll('.cell');
+    const row = document.getElementById(`row${currentRow}`);
+    const cells = row.querySelectorAll('.cell');
 
-    // Color row like normal
-    // Animate letter colors after guess
-for(let i=0;i<5;i++){
-    const letter = cells[i].textContent;
-    
-    // Remove old color classes first
-    cells[i].classList.remove('green','yellow','gray');
-    
-    // Apply color class
-    if(letter === targetWord[i]){
-        cells[i].classList.add('green');
-        updateAlphabet(letter,'green');
-    } else if(targetWord.includes(letter)){
-        cells[i].classList.add('yellow');
-        updateAlphabet(letter,'yellow');
-    } else {
-        cells[i].classList.add('gray');
-        updateAlphabet(letter,'gray');
+    // ✅ Check if guess is valid
+    if(!triggerWords.includes(guess) && !(await isValidWord(guess))){
+        alert("THAT AIN'T NO REAL WERD, IDJIOT!");
+        return;
     }
-    
-    // Animate the pop effect
-    cells[i].style.animation = 'popLetter 0.3s ease';
-    
-    // Remove animation after done so it can play again
-    cells[i].addEventListener('animationend', () => {
-        cells[i].style.animation = '';
-    }, { once: true });
-}
 
+    // --- Prepare counts for correct coloring ---
+    const targetLetters = targetWord.split('');
+    const guessLetters = guess.split('');
+    const letterCounts = {}; // track remaining letters for yellow check
 
-    // Lock the row
+    targetLetters.forEach(l => {
+        letterCounts[l] = (letterCounts[l] || 0) + 1;
+    });
+
+    // --- First pass: mark greens ---
+    const results = Array(5).fill('gray');
+    for(let i=0; i<5; i++){
+        if(guessLetters[i] === targetLetters[i]){
+            results[i] = 'green';
+            letterCounts[guessLetters[i]]--;
+        }
+    }
+
+    // --- Second pass: mark yellows ---
+    for(let i=0; i<5; i++){
+        if(results[i] === 'gray' && letterCounts[guessLetters[i]] > 0){
+            results[i] = 'yellow';
+            letterCounts[guessLetters[i]]--;
+        }
+    }
+
+    // --- Apply colors to cells & alphabet ---
+    for(let i=0; i<5; i++){
+        cells[i].classList.remove('green','yellow','gray');
+        cells[i].classList.add(results[i]);
+        updateAlphabet(cells[i].textContent, results[i]);
+        cells[i].style.animation = 'popLetter 0.3s ease';
+        cells[i].addEventListener('animationend', () => { cells[i].style.animation = ''; }, { once: true });
+    }
+
     cells.forEach(c => c.classList.add('locked'));
-
-    // Save state including colors and alphabet
     saveGameState();
 
-    // WIN CHECK
+    // --- Check win ---
     if(guess === targetWord){
-        gameOver = true;
-        setBlur(true);
-        mobileInput.blur();
-        saveGameState();
-
-        showWinningGif();
-        startPoopRain(80);
-        setTimeout(() => {
-            fadeOut(document.getElementById('win-gif-container'));
-            document.getElementById('win-message').style.display='block';
-        },4000);
+        gameOver = true; setBlur(true); mobileInput.blur(); saveGameState();
+        showWinningGif(); startPoopRain(80);
+        setTimeout(() => { fadeOut(document.getElementById('win-gif-container')); document.getElementById('win-message').style.display='block'; },4000);
         setTimeout(() => { window.location.href="https://hosky.io"; }, 8000);
         return;
     }
 
-    // LOSS CHECK
+    // --- Check lose ---
     if(currentRow === 5){
-    gameOver = true;
-    setBlur(true);
-    mobileInput.blur();
-    saveGameState();
-
-    document.getElementById('lose-poo-left').style.display='block';
-    document.getElementById('lose-poo-right').style.display='block';
-    startLosePoopRain(40);
-
-    const loseGifs=["6289320449545116130","24576363","5408039","1639610178022128587","1514012758219765433"];
-    const gifContainer=document.getElementById('lose-gif-container');
-    const randomId=loseGifs[Math.floor(Math.random()*loseGifs.length)];
-    gifContainer.innerHTML="";
-    const embedDiv=document.createElement("div");
-    embedDiv.className="tenor-gif-embed";
-    embedDiv.setAttribute("data-postid",randomId);
-    embedDiv.setAttribute("data-share-method","host");
-    embedDiv.setAttribute("data-aspect-ratio","1");
-    embedDiv.setAttribute("data-width","100%");
-    gifContainer.appendChild(embedDiv);
-    const script=document.createElement("script"); 
-    script.type="text/javascript"; 
-    script.async=true; 
-    script.src="https://tenor.com/embed.js"; 
-    gifContainer.appendChild(script);
-    fadeIn(gifContainer);
-
-    // Fade in the losing message after 4s (same timing as win)
-    setTimeout(() => { 
-        fadeOut(gifContainer); 
-        document.getElementById('lose-message').style.display='block'; 
-    }, 4000);
-
-    setTimeout(() => { window.location.href="https://hosky.io"; }, 8000);
-    return;
-}
-
-    // PROFANITY CHECK
-    if(checkProfanity(guess)){
-        currentRow++; currentCol=0; updateActiveCell(); saveGameState();
-        window.location.href = "https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/";
+        gameOver = true; setBlur(true); mobileInput.blur(); saveGameState();
+        document.getElementById('lose-poo-left').style.display='block';
+        document.getElementById('lose-poo-right').style.display='block';
+        startLosePoopRain(40);
+        const loseGifs=["6289320449545116130","24576363","5408039","1639610178022128587","1514012758219765433"];
+        const gifContainer=document.getElementById('lose-gif-container');
+        const randomId=loseGifs[Math.floor(Math.random()*loseGifs.length)];
+        gifContainer.innerHTML="";
+        const embedDiv=document.createElement("div");
+        embedDiv.className="tenor-gif-embed";
+        embedDiv.setAttribute("data-postid",randomId);
+        embedDiv.setAttribute("data-share-method","host");
+        embedDiv.setAttribute("data-aspect-ratio","1");
+        embedDiv.setAttribute("data-width","100%");
+        gifContainer.appendChild(embedDiv);
+        const script=document.createElement("script"); 
+        script.type="text/javascript"; 
+        script.async=true; 
+        script.src="https://tenor.com/embed.js"; 
+        gifContainer.appendChild(script);
+        fadeIn(gifContainer);
+        setTimeout(() => { fadeOut(gifContainer); document.getElementById('lose-message').style.display='block'; }, 4000);
+        setTimeout(() => { window.location.href="https://hosky.io"; }, 8000);
         return;
     }
 
-    // TRIGGER WORD HANDLING
+    // --- Trigger & Profanity ---
+    if(checkProfanity(guess)){
+        currentRow++; currentCol=0; updateActiveCell(); saveGameState();
+        window.open("https://www.reddit.com/r/Rants/comments/p1vrsr/when_people_say_keep_it_pg_do_they_mean_keep_it/", '_blank');
+        return;
+    }
+
     if(triggerWords.includes(guess)){
         currentRow++; currentCol=0; updateActiveCell(); saveGameState();
         const links = redirects[guess];
-        window.location.href = links[Math.floor(Math.random()*links.length)];
+        const randomLink = links[Math.floor(Math.random() * links.length)];
+        window.open(randomLink, '_blank');
         return;
     }
 
-    // Normal next row
-    currentRow++;
-    currentCol=0;
-    updateActiveCell();
-    saveGameState();
+    // --- Next row ---
+    currentRow++; currentCol=0; updateActiveCell(); saveGameState();
 }
 
-// SHOW WIN GIF
+// --- SHOW WIN GIF ---
 function showWinningGif(){
     const gifContainer=document.getElementById('win-gif-container');
     const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];
@@ -388,4 +450,3 @@ updateActiveCell();
 </script>
 </body>
 </html>
-
