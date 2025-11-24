@@ -316,12 +316,8 @@ alphabetContainer.appendChild(enterBox);
 document.querySelectorAll('.letter-box').forEach(box => {
     box.addEventListener('click', () => {
         const letter = box.textContent;
-        if (letter === 'ENTER') {
-            handleKey('Enter'); // trigger enter functionality
-        } else {
-            handleKey(letter);  // regular letter
-        }
-        mobileInput.focus(); // optional: keep focus on mobile input
+        handleKey(letter);  // simulate typing the letter
+        // mobileInput.focus(); // removed to prevent mobile keyboard
     });
 });
 // --- GAME FUNCTIONS ---
