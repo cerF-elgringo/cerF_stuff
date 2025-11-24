@@ -254,6 +254,16 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
     transform: scale(1.05);  /* subtle hover scale */
 }
 @media (max-width:500px){.mode-btn{font-size:24px;padding:10px 20px}.mode-title{font-size:32px}}
+
+/* Adjust GLABDLE title on small screens */
+@media (max-width: 500px) {
+    #mode-select-overlay h1,
+    #game-wrapper h1 {
+        font-size: 48px;       /* smaller title on mobile */
+        margin-top: 10px;      /* add some spacing from top */
+    }
+}
+
 </style>
 </head>
 <body>
