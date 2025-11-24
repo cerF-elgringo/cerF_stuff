@@ -236,6 +236,14 @@ for(let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
     box.textContent=l;
     alphabetContainer.appendChild(box);
 }
+// --- MAKE ALPHABET CLICKABLE ---
+document.querySelectorAll('.letter-box').forEach(box => {
+    box.addEventListener('click', () => {
+        const letter = box.textContent;
+        handleKey(letter);  // simulate typing the letter
+        mobileInput.focus(); // optional: keep focus on mobile input
+    });
+});
 // --- GAME FUNCTIONS ---
 function updateAlphabet(letter,state){
     const box=document.getElementById(`letter-${letter}`);
@@ -332,9 +340,15 @@ async function processGuess(guess){
 
     // ✅ Check if guess is valid
     if(!triggerWords.includes(guess) && !(await isValidWord(guess))){
-        alert("THAT AIN'T NO REAL WERD, IDJIOT!");
-        return;
-    }
+    alert("THAT AIN'T NO REAL WERD, IDJIOT!");
+    // CLEAR THE CURRENT ROW
+    const cells = document.getElementById(`row${currentRow}`).querySelectorAll('.cell');
+    cells.forEach(c => c.textContent = "");
+    currentCol = 0;
+    updateActiveCell();
+    saveGameState();
+    return;
+}
 
     // --- Prepare counts for correct coloring ---
     const targetLetters = targetWord.split('');
