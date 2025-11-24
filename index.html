@@ -278,7 +278,18 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
         <button class="mode-btn" id="normal-btn">NORMAL Words</button>
     </div>
 </div>
-
+<div id="correct-word-display" style="
+    position: fixed;
+    top: 20px;
+    right: 10px;
+    font-size: 24px;
+    color: orange;
+    font-family: 'GROBOLD', sans-serif;
+    z-index: 10002;
+    display: none;
+">
+    WORD
+</div>
 <div id="game-wrapper">
     <div id="lose-poo-left" class="lose-poo">💩</div>
     <div id="lose-poo-right" class="lose-poo">💩</div>
@@ -339,32 +350,30 @@ document.getElementById('hosky-btn').addEventListener('click', () => {
     gameWrapper.style.display = 'flex';
 });
 
-document.getElementById('normal-btn').addEventListener('click', () => {
+document.getElementById('normal-btn').addEventListener('click', async () => {
     selectedMode = 'NORMAL';
     document.getElementById('mode-select-overlay').style.display = 'none';
     gameWrapper.style.display = 'flex';
 
-    // Fetch random 5-letter word
-    fetch('https://random-word-api.vercel.app/api?words=1&length=5')
-        .then(res => res.json())
-        .then(data => {
-            // API returns array: ["apple"]
-            targetWord = data[0].toUpperCase();
-            console.log("NORMAL target word:", targetWord);
+    try {
+        const res = await fetch('https://random-word-api.vercel.app/api?words=1&length=5');
+        const data = await res.json();
+        targetWord = data[0].toUpperCase();
+        console.log("NORMAL target word:", targetWord);
 
-            const debugDiv = document.getElementById('debug-word');
+        // Optional debug display
+        const debugDiv = document.getElementById('debug-word');
+        if(debugDiv){
             debugDiv.style.display = 'block';
             document.getElementById('debug-word-text').textContent = targetWord;
-        })
-        .catch(err => {
-            console.error("Error fetching normal word:", err);
-            targetWord = "APPLE"; // fallback
+        }
 
-            const debugDiv = document.getElementById('debug-word');
-            debugDiv.style.display = 'block';
-            document.getElementById('debug-word-text').textContent = targetWord;
-        });
+    } catch(err) {
+        console.error("Error fetching normal word:", err);
+        targetWord = "APPLE"; // fallback
+    }
 });
+
 
 // --- CREATE CELLS ---
 function createCells(row,rowIndex){
@@ -590,7 +599,9 @@ async function processGuess(guess){
 
     // --- Check lose ---
     if(currentRow === 5){
-        gameOver = true; setBlur(true); mobileInput.blur(); saveGameState();
+        gameOver = true; const correctDisplay = document.getElementById('correct-word-display');
+correctDisplay.textContent = targetWord.toUpperCase();
+correctDisplay.style.display = 'block'; setBlur(true); mobileInput.blur(); saveGameState();
         document.getElementById('lose-poo-left').style.display='block';
         document.getElementById('lose-poo-right').style.display='block';
         startLosePoopRain(40);
