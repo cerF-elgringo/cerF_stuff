@@ -329,12 +329,14 @@ window.addEventListener('load', () => {
     }
 });
 
-// Back/forward navigation restores previous game
 window.addEventListener('pageshow', (event) => {
-    if(event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward"){
+    const navType = performance.getEntriesByType("navigation")[0].type;
+    if(event.persisted || navType === "back_forward"){
         const savedState = sessionStorage.getItem('glabble_state');
         if(savedState){
-            // Reset UI elements that should not persist
+            loadGameState(); // restores currentRow, currentCol, gameOver, board, alphabet
+
+            // Reset ephemeral UI elements
             document.getElementById('win-message').style.display = 'none';
             document.getElementById('lose-message').style.display = 'none';
             document.getElementById('win-gif-container').style.opacity = 0;
@@ -343,12 +345,57 @@ window.addEventListener('pageshow', (event) => {
             document.getElementById('lose-gif-container').style.display = 'none';
             document.getElementById('lose-poo-left').style.display = 'none';
             document.getElementById('lose-poo-right').style.display = 'none';
-            setBlur(false); // remove blur
-            // Hide mode overlay & show game
+            setBlur(false);
+
+            // Hide overlay & show game
             document.getElementById('mode-select-overlay').style.display = 'none';
             gameWrapper.style.display = 'flex';
+
+            // Focus mobile input on small screens
+            if(window.innerWidth <= 500){
+                mobileInput.focus();
+                setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
+            }
+
+            // If game was won, show win message and buttons
+            const lastRow = currentRow > 0 ? currentRow - 1 : 0;
+            const rowCells = document.getElementById(`row${lastRow}`).querySelectorAll('.cell');
+            if(gameOver && Array.from(rowCells).every(c=>c.classList.contains('green'))){
+                document.getElementById('win-message').style.display = 'block';
+                addWinButtons();
+            }
+        }
+    }
+});
+
+window.addEventListener('pageshow', (event) => {
+    if(event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward"){
+        const savedState = sessionStorage.getItem('glabble_state');
+        if(savedState){
+            // Reset UI elements
+            document.getElementById('win-message').style.display = 'none';
+            document.getElementById('lose-message').style.display = 'none';
+            document.getElementById('win-gif-container').style.opacity = 0;
+            document.getElementById('win-gif-container').style.display = 'none';
+            document.getElementById('lose-gif-container').style.opacity = 0;
+            document.getElementById('lose-gif-container').style.display = 'none';
+            document.getElementById('lose-poo-left').style.display = 'none';
+            document.getElementById('lose-poo-right').style.display = 'none';
+            setBlur(false);
+
+            // Hide overlay & show game
+            document.getElementById('mode-select-overlay').style.display = 'none';
+            gameWrapper.style.display = 'flex';
+
             // Load board
             loadGameState();
+
+            // Show win buttons if this was a won game
+            if(gameOver && Array.from(document.getElementById('row'+(currentRow-1)).querySelectorAll('.cell')).every(c=>c.classList.contains('green'))){
+                addWinButtons();
+                document.getElementById('win-message').style.display = 'block'; // optionally show the win message
+            }
+
             if(window.innerWidth <= 500){
                 mobileInput.focus();
                 setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
@@ -625,9 +672,12 @@ async function processGuess(guess){
         startPoopRain(80);
 
         setTimeout(() => { 
-            fadeOut(document.getElementById('win-gif-container')); 
-            document.getElementById('win-message').style.display='block'; 
-        }, 4000);
+    fadeOut(document.getElementById('win-gif-container')); 
+    const winMsg = document.getElementById('win-message');
+    winMsg.style.display='block'; 
+      // <-- add this here
+}, 4000);
+
 
         setTimeout(() => { 
             window.location.href="https://hosky.io"; 
@@ -720,6 +770,225 @@ window.addEventListener('load', () => {
         }
     }
 });
+// --- LOSE BUTTONS ---
+// --- LOSE BUTTONS ---
+function addLoseButtons() {
+    // Remove existing buttons if any
+    const existing = document.getElementById('lose-buttons-container');
+    if (existing) existing.remove();
+
+    const container = document.createElement('div');
+    container.id = 'lose-buttons-container';
+    container.style.position = 'fixed';
+    container.style.bottom = '50px'; // lower on screen
+    container.style.left = '50%';
+    container.style.transform = 'translateX(-50%)';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'row';
+    container.style.justifyContent = 'center';
+    container.style.alignItems = 'center';
+    container.style.gap = '15px';
+    container.style.flexWrap = 'wrap';
+    container.style.maxWidth = '90%';
+    container.style.zIndex = '10005';
+
+    function createButton(text, onClick) {
+        const btn = document.createElement('button');
+        btn.textContent = text;
+        btn.style.fontFamily = 'GROBOLD, sans-serif';
+        btn.style.fontSize = '15px';
+        btn.style.padding = '10px 20px';
+        btn.style.cursor = 'pointer';
+        btn.style.borderRadius = '6px';
+        btn.style.border = '2px solid #206cd2';
+        btn.style.backgroundColor = '#ffa500';
+        btn.style.color = 'black';
+        btn.style.minWidth = '140px';
+        btn.style.maxWidth = '180px';
+        btn.style.flex = '1 1 auto'; // flex-grow and shrink allowed
+
+        btn.addEventListener('mouseover', () => {
+            btn.style.backgroundColor = '#206cd2';
+            btn.style.color = 'black';
+        });
+        btn.addEventListener('mouseout', () => {
+            btn.style.backgroundColor = '#ffa500';
+            btn.style.color = 'black';
+        });
+        btn.addEventListener('click', onClick);
+        return btn;
+    }
+
+    // Buttons
+    const retryBtn = createButton('TRY THIS WORD AGAIN', () => {
+        container.remove();
+        currentRow = 0; currentCol = 0; gameOver = false;
+        document.getElementById('lose-message').style.display='none';
+        document.getElementById('correct-word-display').style.display='none';
+        setBlur(false);
+        for(let r=0;r<6;r++){
+            const cells = document.getElementById(`row${r}`).querySelectorAll('.cell');
+            cells.forEach(c => { c.textContent=''; c.className='cell'; });
+        }
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{
+            const box = document.getElementById(`letter-${l}`);
+            if(box){ box.style.backgroundColor=''; box.style.color='#206cd2'; }
+        });
+        saveGameState();
+    });
+
+    const newWordBtn = createButton('NEW WORD', () => {
+        container.remove();
+        currentRow = 0; currentCol = 0; gameOver = false;
+        document.getElementById('lose-message').style.display='none';
+        document.getElementById('correct-word-display').style.display='none';
+        setBlur(false);
+        for(let r=0;r<6;r++){
+            const cells = document.getElementById(`row${r}`).querySelectorAll('.cell');
+            cells.forEach(c => { c.textContent=''; c.className='cell'; });
+        }
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{
+            const box = document.getElementById(`letter-${l}`);
+            if(box){ box.style.backgroundColor=''; box.style.color='#206cd2'; }
+        });
+        if(selectedMode==='NORMAL'){
+            fetch('https://random-word-api.vercel.app/api?words=1&length=5')
+            .then(res=>res.json())
+            .then(data=>{ targetWord = data[0].toUpperCase(); saveGameState(); })
+            .catch(()=>{ targetWord="APPLE"; saveGameState(); });
+        } else { targetWord="HOSKY"; }
+    });
+
+    const pampBtn = createButton('PAMP GLABS', () => {
+        window.open("https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19",'_blank');
+    });
+
+    container.appendChild(retryBtn);
+    container.appendChild(newWordBtn);
+    container.appendChild(pampBtn);
+    document.body.appendChild(container);
+}
+
+
+// --- SHOW LOSE BUTTONS AFTER RETURN ---
+// Only show the correct buttons after returning or refreshing
+window.addEventListener('pageshow', (event) => {
+    const savedState = sessionStorage.getItem('glabble_state');
+    if (!savedState) return;
+
+    const state = JSON.parse(savedState);
+    if (!state.gameOver) return;
+
+    // Determine if last guess was a win
+    const lastRow = state.board[state.currentRow > 0 ? state.currentRow - 1 : 0];
+    const won = lastRow.every(c => c.classes.includes('green'));
+
+    if (won) {
+        // Only show win buttons
+        setTimeout(() => addWinButtons(), 500);
+    } else {
+        // Only show lose buttons
+        setTimeout(() => addLoseButtons(), 500);
+    }
+});
+
+
+// --- WIN BUTTONS (back button restore only) ---
+// --- WIN BUTTONS ---
+function addWinButtons() {
+    // Remove existing buttons if any
+    const existing = document.getElementById('win-buttons-container');
+    if(existing) existing.remove();
+
+    // Blur the keyboard/alphabet
+    document.getElementById('alphabet').style.filter = 'blur(5px)';
+
+    const container = document.createElement('div');
+    container.id = 'win-buttons-container';
+    container.style.position = 'fixed';
+    container.style.bottom = '90px';
+    container.style.left = '50%';
+    container.style.transform = 'translateX(-50%)';
+    container.style.display = 'flex';
+    container.style.justifyContent = 'center';
+    container.style.alignItems = 'center';
+    container.style.gap = '20px';
+    container.style.zIndex = '10005';
+    container.style.flexWrap = 'wrap';
+
+    function createButton(text, onClick) {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.style.fontFamily = 'GROBOLD, sans-serif';
+    btn.style.fontSize = '16px';       // 25% smaller
+    btn.style.padding = '12px 24px';   // 25% smaller
+    btn.style.cursor = 'pointer';
+    btn.style.borderRadius = '6px';
+    btn.style.border = '2px solid #206cd2';
+    btn.style.backgroundColor = '#ff7f00'; // orange base
+    btn.style.color = 'black';
+    btn.style.transition = 'all 0.2s ease';
+
+    btn.addEventListener('mouseover', () => {
+        btn.style.backgroundColor = '#206cd2'; // Hosky blue hover
+        btn.style.color = 'black';
+        btn.style.transform = 'scale(1.1)';    // slight pop
+        btn.style.boxShadow = '0 0 15px #206cd2'; // subtle glow
+    });
+
+    btn.addEventListener('mouseout', () => {
+        btn.style.backgroundColor = '#ff7f00'; // revert orange
+        btn.style.color = 'black';
+        btn.style.transform = 'scale(1)';
+        btn.style.boxShadow = 'none';
+    });
+
+    btn.addEventListener('click', onClick);
+    return btn;
+}
+
+
+
+
+    const newGameBtn = createButton('NEW HOSKY MODE GAME', () => {
+        container.remove();
+        currentRow = 0; currentCol = 0; gameOver = false;
+        document.getElementById('win-message').style.display='none';
+        // Remove blur from keyboard
+        document.getElementById('alphabet').style.filter = 'none';
+        setBlur(false); // optional, keeps game board clear
+
+        for(let r=0;r<6;r++){
+            const cells = document.getElementById(`row${r}`).querySelectorAll('.cell');
+            cells.forEach(c=>{c.textContent=''; c.className='cell';});
+        }
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{
+            const box = document.getElementById(`letter-${l}`);
+            if(box){box.style.backgroundColor=''; box.style.color='#206cd2';}
+        });
+        saveGameState();
+    });
+
+    const pampGlabsBtn = createButton('PAMP GLABS', () => {
+        window.open("https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19", '_blank');
+    });
+
+    container.appendChild(newGameBtn);
+    container.appendChild(pampGlabsBtn);
+
+    document.body.appendChild(container);
+}
+
+
+
+
+
+
+// Call this **only if the restored game was a win**
+if(gameOver && document.getElementById('win-message').style.display==='block'){
+    addWinButtons();
+}
+
 
 </script>
 </body>
