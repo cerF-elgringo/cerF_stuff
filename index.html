@@ -311,7 +311,7 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
 <div id="lose-gif-container"></div>
 
 <div id="win-message">GOOD JOB IDJIOT</div>
-<div id="lose-message">Try again, idjiot</div>
+<div id="lose-message">TRY AGAIN IDJIOT</div>
 
 <div id="games-counter">Total games submitted: <span id="games-count">0</span></div>
 
@@ -329,80 +329,50 @@ window.addEventListener('load', () => {
     }
 });
 
+// --- CLEAN PAGESHOW HANDLER (mobile keyboard hidden on return) ---
 window.addEventListener('pageshow', (event) => {
-    const navType = performance.getEntriesByType("navigation")[0].type;
-    if(event.persisted || navType === "back_forward"){
-        const savedState = sessionStorage.getItem('glabble_state');
-        if(savedState){
-            loadGameState(); // restores currentRow, currentCol, gameOver, board, alphabet
+    const savedState = sessionStorage.getItem('glabble_state');
+    if (!savedState) return;
 
-            // Reset ephemeral UI elements
-            document.getElementById('win-message').style.display = 'none';
-            document.getElementById('lose-message').style.display = 'none';
-            document.getElementById('win-gif-container').style.opacity = 0;
-            document.getElementById('win-gif-container').style.display = 'none';
-            document.getElementById('lose-gif-container').style.opacity = 0;
-            document.getElementById('lose-gif-container').style.display = 'none';
-            document.getElementById('lose-poo-left').style.display = 'none';
-            document.getElementById('lose-poo-right').style.display = 'none';
-            setBlur(false);
+    const state = JSON.parse(savedState);
 
-            // Hide overlay & show game
-            document.getElementById('mode-select-overlay').style.display = 'none';
-            gameWrapper.style.display = 'flex';
+    // Hide mode overlay & show game
+    document.getElementById('mode-select-overlay').style.display = 'none';
+    gameWrapper.style.display = 'flex';
 
-            // Focus mobile input on small screens
-            if(window.innerWidth <= 500){
-                mobileInput.focus();
-                setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
-            }
+    // Load saved board & state
+    loadGameState();
 
-            // If game was won, show win message and buttons
-            const lastRow = currentRow > 0 ? currentRow - 1 : 0;
-            const rowCells = document.getElementById(`row${lastRow}`).querySelectorAll('.cell');
-            if(gameOver && Array.from(rowCells).every(c=>c.classList.contains('green'))){
-                document.getElementById('win-message').style.display = 'block';
-                addWinButtons();
-            }
+    // Reset ephemeral UI
+    document.getElementById('win-message').style.display = 'none';
+    document.getElementById('lose-message').style.display = 'none';
+    document.getElementById('win-gif-container').style.opacity = 0;
+    document.getElementById('win-gif-container').style.display = 'none';
+    document.getElementById('lose-gif-container').style.opacity = 0;
+    document.getElementById('lose-gif-container').style.display = 'none';
+    document.getElementById('lose-poo-left').style.display = 'none';
+    document.getElementById('lose-poo-right').style.display = 'none';
+    setBlur(false);
+
+    // Hide mobile keyboard
+    mobileInput.blur();
+
+    // Determine if last guess was a win
+    const lastRow = state.board[state.currentRow > 0 ? state.currentRow - 1 : 0];
+    const won = lastRow.every(c => c.classes.includes('green'));
+
+    // Show appropriate buttons
+    setTimeout(() => {
+        if (won) {
+            addWinButtons();
+        } else if (state.gameOver) {
+            addLoseButtons();
         }
-    }
+    }, 500);
 });
 
-window.addEventListener('pageshow', (event) => {
-    if(event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward"){
-        const savedState = sessionStorage.getItem('glabble_state');
-        if(savedState){
-            // Reset UI elements
-            document.getElementById('win-message').style.display = 'none';
-            document.getElementById('lose-message').style.display = 'none';
-            document.getElementById('win-gif-container').style.opacity = 0;
-            document.getElementById('win-gif-container').style.display = 'none';
-            document.getElementById('lose-gif-container').style.opacity = 0;
-            document.getElementById('lose-gif-container').style.display = 'none';
-            document.getElementById('lose-poo-left').style.display = 'none';
-            document.getElementById('lose-poo-right').style.display = 'none';
-            setBlur(false);
 
-            // Hide overlay & show game
-            document.getElementById('mode-select-overlay').style.display = 'none';
-            gameWrapper.style.display = 'flex';
 
-            // Load board
-            loadGameState();
-
-            // Show win buttons if this was a won game
-            if(gameOver && Array.from(document.getElementById('row'+(currentRow-1)).querySelectorAll('.cell')).every(c=>c.classList.contains('green'))){
-                addWinButtons();
-                document.getElementById('win-message').style.display = 'block'; // optionally show the win message
-            }
-
-            if(window.innerWidth <= 500){
-                mobileInput.focus();
-                setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
-            }
-        }
-    }
-});
 
 
 // --- GAME MODE VARIABLES ---
@@ -872,25 +842,6 @@ function addLoseButtons() {
 
 // --- SHOW LOSE BUTTONS AFTER RETURN ---
 // Only show the correct buttons after returning or refreshing
-window.addEventListener('pageshow', (event) => {
-    const savedState = sessionStorage.getItem('glabble_state');
-    if (!savedState) return;
-
-    const state = JSON.parse(savedState);
-    if (!state.gameOver) return;
-
-    // Determine if last guess was a win
-    const lastRow = state.board[state.currentRow > 0 ? state.currentRow - 1 : 0];
-    const won = lastRow.every(c => c.classes.includes('green'));
-
-    if (won) {
-        // Only show win buttons
-        setTimeout(() => addWinButtons(), 500);
-    } else {
-        // Only show lose buttons
-        setTimeout(() => addLoseButtons(), 500);
-    }
-});
 
 
 // --- WIN BUTTONS (back button restore only) ---
