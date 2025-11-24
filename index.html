@@ -34,8 +34,8 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
 #game-container { display: grid; grid-template-rows: repeat(6, 60px); grid-gap: 10px; margin-bottom: 20px; }
 .row { display: grid; grid-template-columns: repeat(5, 60px); grid-gap: 10px; }
 .cell { 
-    width: 60px; 
-    height: 60px; 
+    width: 63px; 
+    height: 63px; 
     border: 2px solid #206cd2; 
     display: flex; 
     justify-content: center; 
@@ -53,7 +53,7 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
 .gray { background-color: #555; color: black; }
 .cell.locked { pointer-events: none; opacity: 0.6; user-select: none; }
 
-#alphabet { display: flex; flex-wrap: wrap; max-width: 420px; justify-content: center; gap: 5px; margin-top: 10px; }
+#alphabet { display: flex; flex-wrap: wrap; max-width: 420px; justify-content: center; gap: 5px; margin-top: 5px; }
 .letter-box { 
     width: 38px; 
     height: 38px; 
@@ -74,7 +74,79 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
     transform: scale(1.1);     /* slight grow effect */
     box-shadow: 0 0 8px #206cd2; /* subtle glow */
 }
+/* Extra spacing for special keys */
+#letter-enter {
+    margin-right: 12px;  /* default spacing on desktop */
+}
 
+#letter-backspace {
+    margin-left: 12px;   /* default spacing on desktop */
+}
+
+/* Reduce spacing on smaller screens */
+@media (max-width: 500px) {
+    #letter-enter {
+        margin-right: 6px;
+    }
+    #letter-backspace {
+        margin-left: 6px;
+    }
+}
+/* Special keys slightly bigger */
+#letter-enter, #letter-backspace {
+    width: 80px;      /* wider than normal letter boxes (38px) */
+    height: 38px;     /* same height as letters */
+    border-radius: 6px; /* same rounding as letters */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+/* ENTER key styling */
+#letter-enter {
+    margin-right: 12px;  /* spacing to next key */
+    background-color: #00ff00;  /* keep your current color */
+    color: black;
+}
+
+#letter-enter:hover {
+    background-color: #0000ff;  /* hover effect */
+    transform: scale(1.05);
+}
+
+/* BACKSPACE key styling */
+#letter-backspace {
+    margin-left: 12px;       /* spacing from previous key */
+    background-color: black;  /* same as letter boxes */
+    border: 3.5px solid #206cd2; /* match letter boxes border */
+    color: #206cd2;          /* same as letters */
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 6px;      /* same rounding as letters */
+    transition: all 0.2s ease;
+}
+
+#letter-backspace:hover {
+    background-color: #206cd2; /* bright blue on hover like letters */
+    color: black;              /* text contrast */
+    transform: scale(1.05);
+    box-shadow: 0 0 8px #206cd2; /* subtle glow like letters */
+}
+
+/* Reduce spacing on smaller screens */
+@media (max-width: 500px) {
+    #letter-enter, #letter-backspace {
+        width: 60px; /* slightly smaller on mobile */
+    }
+    #letter-enter { margin-right: 6px; }
+    #letter-backspace { margin-left: 6px; }
+}
 #mobile-input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 
 #win-gif-container, #lose-gif-container { display: none; opacity: 0; transition: opacity 1s ease; position: fixed; top:50%; left:50%; transform: translate(-50%, -50%); z-index: 9999; width: 450px; max-width: 90%; }
@@ -297,8 +369,10 @@ function createCells(row,rowIndex){
 }
 for(let i=0;i<6;i++) createCells(document.getElementById(`row${i}`), i);
 
-// --- ALPHABET + ENTER KEY ---
+// --- ALPHABET + ENTER + BACKSPACE ---
 const alphabetContainer = document.getElementById('alphabet');
+
+// create normal letters
 for (let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
     const box = document.createElement('div');
     box.classList.add('letter-box');
@@ -310,14 +384,29 @@ for (let l of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
 // ENTER key
 const enterBox = document.createElement('div');
 enterBox.classList.add('letter-box', 'enter-box');
+enterBox.id = "letter-enter"; // unique ID
 enterBox.textContent = 'ENTER';
 alphabetContainer.appendChild(enterBox);
-// --- MAKE ALPHABET CLICKABLE ---
+
+// BACKSPACE key
+const backBox = document.createElement('div');
+backBox.classList.add('letter-box', 'enter-box'); // same size as ENTER key
+backBox.id = "letter-backspace";
+backBox.textContent = 'back';  // standard back arrow symbol
+alphabetContainer.appendChild(backBox);
+
+// --- CLICK HANDLER ---
 document.querySelectorAll('.letter-box').forEach(box => {
     box.addEventListener('click', () => {
         const letter = box.textContent;
-        handleKey(letter);  // simulate typing the letter
-        // mobileInput.focus(); // removed to prevent mobile keyboard
+
+        if(box.id === "letter-enter"){
+            handleKey('Enter');
+        } else if(box.id === "letter-backspace"){
+            handleKey('Backspace');
+        } else {
+            handleKey(letter);
+        }
     });
 });
 // --- GAME FUNCTIONS ---
