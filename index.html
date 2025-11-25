@@ -1,11 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>GLABDLE</title>
 <link href="https://fonts.cdnfonts.com/css/grobold" rel="stylesheet">
 <style>
+#landscape-warning {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 999999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#landscape-warning-text {
+    font-family: 'GROBOLD', sans-serif;
+    font-size: 32px;
+    color: #206cd2;
+    text-align: center;
+    padding: 20px;
+    text-shadow: 0 0 5px #00ff00, 0 0 8px #00ff00;
+}
+
+@media (max-width: 500px) and (orientation: landscape) {
+    #landscape-warning {
+        display: flex !important;
+    }
+}
 /* Mobile consistency fixes */
 * {
     -webkit-font-smoothing: antialiased;
@@ -137,6 +166,10 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
 </style>
 </head>
 <body>
+
+<div id="landscape-warning">
+    <div id="landscape-warning-text">ROTATE TO PORTRAIT MODE</div>
+</div>
 
 <div style="position:fixed;top:5px;left:5px;font-size:12px;color:#206cd2;font-family:'GROBOLD',sans-serif;z-index:120000;opacity:0.7;">v4.2.0.6.9</div>
 <!-- Home button -->
@@ -1030,6 +1063,20 @@ document.addEventListener('touchmove', (e) => {
     }
     e.preventDefault();
 }, { passive: false });
+
+// Show landscape warning on mobile
+function checkOrientation() {
+    const warning = document.getElementById('landscape-warning');
+    if (window.innerWidth <= 500 && window.innerWidth > window.innerHeight) {
+        warning.style.display = 'flex';
+    } else {
+        warning.style.display = 'none';
+    }
+}
+
+window.addEventListener('orientationchange', checkOrientation);
+window.addEventListener('resize', checkOrientation);
+checkOrientation(); // Check on load
 
 </script>
 </body>
