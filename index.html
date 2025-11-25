@@ -160,12 +160,18 @@ document.getElementById('home-button').addEventListener('click', () => {
     // Hide GIF containers & poop animations
     document.getElementById('win-gif-container').style.display = 'none';
     document.getElementById('lose-gif-container').style.display = 'none';
-    
     document.querySelectorAll('.falling-poo').forEach(el => el.remove());
+
+    // Remove dynamic win/lose buttons if they exist
+    const winButtons = document.getElementById('win-buttons-container');
+    if (winButtons) winButtons.remove();
+    const loseButtons = document.getElementById('lose-buttons-container');
+    if (loseButtons) loseButtons.remove();
 
     // Show mode selection overlay
     document.getElementById('mode-select-overlay').style.display = 'flex';
 });
+
 
 
 
