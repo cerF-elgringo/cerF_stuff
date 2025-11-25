@@ -429,24 +429,27 @@ async function processGuess(guess){
 // restore behavior on load (only if back_forward or restore flag)
 window.addEventListener('load', () => {
   const saved = sessionStorage.getItem('glabble_state');
-  const modeOverlay = document.getElementById('mode-select-overlay');
   if (!saved) return;
 
   const navType = (performance.getEntriesByType("navigation")[0] || {}).type || '';
   const restoreFlag = sessionStorage.getItem('glabble_restore');
-
   if (navType !== 'back_forward' && restoreFlag !== '1') return;
 
   sessionStorage.removeItem('glabble_restore');
 
   // Hide mode selection overlay and show game wrapper
-  modeOverlay.style.display = 'none';
+  document.getElementById('mode-select-overlay').style.display = 'none';
   gameWrapper.style.display = 'flex';
-  resetEndgameUI();
 
+  // Load the game state first
   loadGameState();
 
-  // Always hide win/lose UI first
+  // Parse state to check win/lose
+  const state = JSON.parse(saved);
+  const lastRow = state.board && state.board[state.currentRow > 0 ? state.currentRow - 1 : 0];
+  const won = lastRow && lastRow.every(c => c.classes.includes('green'));
+
+  // NOW hide all the UI elements
   document.getElementById('win-message').style.display = 'none';
   document.getElementById('lose-message').style.display = 'none';
   document.getElementById('correct-word-display').style.display = 'none';
@@ -456,32 +459,21 @@ window.addEventListener('load', () => {
   document.getElementById('lose-gif-container').style.opacity = 0;
   document.getElementById('lose-poo-left').style.display = 'none';
   document.getElementById('lose-poo-right').style.display = 'none';
+  document.querySelectorAll('.falling-poo').forEach(el => el.remove());
   setBlur(false);
+  mobileInput.blur();
 
-  // Mobile focus
-  if (window.innerWidth <= 500) {
-    mobileInput.focus();
-    setTimeout(() => {
-      document.getElementById(`row${currentRow}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 50);
-  }
+  // Adjust board
+  requestAnimationFrame(() => setTimeout(adjustBoardForWordLength, 20));
 
-  // Determine if last game was a win or lose
-  const state = JSON.parse(saved);
-  const lastRow = state.board && state.board[state.currentRow > 0 ? state.currentRow - 1 : 0];
-  const won = lastRow && lastRow.every(c => c.classes.includes('green'));
-
-  // Show buttons on mobile and desktop if game over
+  // Add buttons after everything is ready - LONGER delay for mobile
   setTimeout(() => {
     if (won) {
       addWinButtons();
     } else if (state.gameOver) {
       addLoseButtons();
     }
-  }, 100); // slight delay to ensure DOM is ready
-
-  // Adjust board after restoration
-  requestAnimationFrame(() => setTimeout(adjustBoardForWordLength, 20));
+  }, window.innerWidth <= 500 ? 300 : 100);
 });
 
 
