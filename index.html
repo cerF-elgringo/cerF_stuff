@@ -64,7 +64,7 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
 </head>
 <body>
 
-<div style="position:fixed;top:5px;left:5px;font-size:12px;color:#206cd2;font-family:'GROBOLD',sans-serif;z-index:10001;opacity:0.7;">v1.0.6.9</div>    
+<div style="position:fixed;top:5px;left:5px;font-size:12px;color:#206cd2;font-family:'GROBOLD',sans-serif;z-index:10001;opacity:0.7;">v1.1.6.9</div>
 <div id="mode-select-overlay">
   <h1 style="font-size:72px;color:#206cd2;margin-bottom:20px;text-shadow:0 0 10px #00ff00,0 0 20px #00ff00,0 0 30px #00ff00">GLABDLE</h1>
   <h2 class="mode-title">Choose Mode</h2>
@@ -467,14 +467,16 @@ window.addEventListener('load', () => {
   // Adjust board
   requestAnimationFrame(() => setTimeout(adjustBoardForWordLength, 20));
 
-  // Add buttons after everything is ready - LONGER delay for mobile
-  setTimeout(() => {
-    if (won) {
-      addWinButtons();
-    } else if (state.gameOver) {
-      addLoseButtons();
-    }
-  }, window.innerWidth <= 500 ? 300 : 100);
+  // Add buttons - use requestAnimationFrame to ensure DOM is ready
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      if (won) {
+        addWinButtons();
+      } else if (state.gameOver) {
+        addLoseButtons();
+      }
+    }, window.innerWidth <= 500 ? 600 : 200);
+  });
 });
 
 
@@ -565,26 +567,7 @@ function addWinButtons(){ const existing=document.getElementById('win-buttons-co
 
 // if restored win state, show win buttons
 if(gameOver && document.getElementById('win-message').style.display==='block'){ addWinButtons(); }
-function resetEndgameUI() {
-  // hide win/lose messages
-  document.getElementById("win-message").style.display = "none";
-  document.getElementById("lose-message").style.display = "none";
 
-  // hide gifs
-  document.getElementById("win-gif-container").style.display = "none";
-  document.getElementById("lose-gif-container").style.display = "none";
-
-  // reset opacity
-  document.getElementById("win-gif-container").style.opacity = 0;
-  document.getElementById("lose-gif-container").style.opacity = 0;
-
-  // remove any falling-poo elements
-  document.querySelectorAll(".falling-poo").forEach(el => el.remove());
-
-  // remove lose-poo corner icons
-  document.getElementById("lose-poo-left").style.display = "none";
-  document.getElementById("lose-poo-right").style.display = "none";
-}
 
 </script>
 </body>
