@@ -440,24 +440,29 @@ window.addEventListener('load', ()=>{
   const state = JSON.parse(saved);
   const lastRow = state.board && state.board[state.currentRow>0?state.currentRow-1:0];
   const won = lastRow && lastRow.every(c=>c.classes.includes('green'));
+  
+  // Hide everything immediately
   document.getElementById('win-message').style.display='none';
   document.getElementById('lose-message').style.display='none';
+  document.getElementById('correct-word-display').style.display='none';
   document.getElementById('win-gif-container').style.opacity = 0;
   document.getElementById('win-gif-container').style.display = 'none';
   document.getElementById('lose-gif-container').style.opacity = 0;
   document.getElementById('lose-gif-container').style.display = 'none';
   document.getElementById('lose-poo-left').style.display='none';
   document.getElementById('lose-poo-right').style.display='none';
-  setBlur(false); mobileInput.blur();setTimeout(()=>{ 
-  if(won) {
-    document.getElementById('win-message').style.display='none';
-    addWinButtons();
-  } else if(state.gameOver) {
-    document.getElementById('lose-message').style.display='none';
-    document.getElementById('correct-word-display').style.display='none';
-    addLoseButtons();
-  }
-}, 500);
+  setBlur(false); 
+  mobileInput.blur();
+  
+  // Add buttons after a delay
+  setTimeout(()=>{ 
+    if(won) {
+      addWinButtons();
+    } else if(state.gameOver) {
+      addLoseButtons();
+    }
+  }, 500);
+  
   requestAnimationFrame(()=>setTimeout(adjustBoardForWordLength, 20));
 });
 
