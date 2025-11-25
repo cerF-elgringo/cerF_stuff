@@ -83,7 +83,8 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
     }
     
     #letter-enter, #letter-backspace {
-        width: 60px;
+        width: 80px;
+	height: 45px;
         font-size: 14px;
     }
     
@@ -95,12 +96,25 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
         margin-left: 4px;
     }
 }
-#letter-enter,#letter-backspace{width:80px;height:38px;border-radius:6px;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:bold;transition:all .2s ease}
+#letter-enter,
+#letter-backspace {
+    width: 80px;        /* can stay longer than normal keys */
+    height: 45px;       /* MATCH the .letter-box height */
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all .2s ease;
+}
+
+
 #letter-enter{background-color:#00ff00;color:black}
 #letter-enter:hover{background-color:#0000ff;transform:scale(1.05)}
 #letter-backspace{background-color:black;border:3.5px solid #206cd2;color:#206cd2}
 #letter-backspace:hover{background-color:#206cd2;color:black;transform:scale(1.05);box-shadow:0 0 8px #206cd2}
-@media(max-width:500px){#letter-enter,#letter-backspace{width:60px}}
+@media(max-width:500px){#letter-enter,#letter-backspace{width:80px; height: 45px}}
 #mobile-input{position:absolute;opacity:0;width:1px;height:1px}
 #win-gif-container,#lose-gif-container{display:none;opacity:0;transition:opacity 1s ease;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;width:450px;max-width:90%}
 #win-message,#lose-message{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(0deg);font-size:84px;line-height:1.1;text-align:center;z-index:9998;background:linear-gradient(90deg,red,orange,yellow,green,blue,indigo,violet);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 6px #ff69b4) drop-shadow(0 0 12px #ff69b4);animation:gradientMove .8s linear infinite alternate,wiggle .2s ease-in-out infinite alternate;overflow:visible}
