@@ -448,8 +448,16 @@ window.addEventListener('load', ()=>{
   document.getElementById('lose-gif-container').style.display = 'none';
   document.getElementById('lose-poo-left').style.display='none';
   document.getElementById('lose-poo-right').style.display='none';
-  setBlur(false); mobileInput.blur();
-  setTimeout(()=>{ if(won) addWinButtons(); else if(state.gameOver) addLoseButtons(); }, 500);
+  setBlur(false); mobileInput.blur();setTimeout(()=>{ 
+  if(won) {
+    document.getElementById('win-message').style.display='none';
+    addWinButtons();
+  } else if(state.gameOver) {
+    document.getElementById('lose-message').style.display='none';
+    document.getElementById('correct-word-display').style.display='none';
+    addLoseButtons();
+  }
+}, 500);
   requestAnimationFrame(()=>setTimeout(adjustBoardForWordLength, 20));
 });
 
