@@ -45,8 +45,6 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
 @keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:150% 50%}100%{background-position:300% 50%}}
 @keyframes revealLetter{0%{transform:scale(0.9);opacity:.7}50%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
 @keyframes wiggle{0%{transform:translate(-50%,-50%) rotate(-2deg)}50%{transform:translate(-50%,-50%) rotate(2deg)}100%{transform:translate(-50%,-50%) rotate(-2deg)}}
-.lose-poo{position:fixed;top:10px;font-size:180px;display:none;z-index:10000;user-select:none;pointer-events:none}
-#lose-poo-left{left:20px}#lose-poo-right{right:20px}
 .falling-poo{position:absolute;pointer-events:none;user-select:none;animation-name:fall;animation-timing-function:linear}
 @keyframes fall{0%{transform:translateY(-200px) rotate(0deg)}100%{transform:translateY(100vh) rotate(720deg)}}
 #games-counter{display:none!important}
@@ -115,8 +113,7 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
 <div id="correct-word-display" style="position:fixed;top:20px;right:10px;font-size:24px;color:orange;font-family:'GROBOLD',sans-serif;z-index:10002;display:none">WORD</div>
 
 <div id="game-wrapper">
-  <div id="lose-poo-left" class="lose-poo">💩</div>
-  <div id="lose-poo-right" class="lose-poo">💩</div>
+
   <h1>GLABDLE</h1>
   <div id="game-container">
     <div class="row" id="row0"></div>
@@ -163,8 +160,7 @@ document.getElementById('home-button').addEventListener('click', () => {
     // Hide GIF containers & poop animations
     document.getElementById('win-gif-container').style.display = 'none';
     document.getElementById('lose-gif-container').style.display = 'none';
-    document.getElementById('lose-poo-left').style.display = 'none';
-    document.getElementById('lose-poo-right').style.display = 'none';
+    
     document.querySelectorAll('.falling-poo').forEach(el => el.remove());
 
     // Show mode selection overlay
@@ -468,8 +464,7 @@ function goToHoskyOptionsMenu() {
   setBlur(true); 
   mobileInput.blur(); 
   saveGameState(); 
-  document.getElementById('lose-poo-left').style.display='block'; 
-  document.getElementById('lose-poo-right').style.display='block';
+  
   
   // ADD BUTTONS FIRST
   setTimeout(() => {
@@ -557,8 +552,7 @@ window.addEventListener('load', () => {
   document.getElementById('win-gif-container').style.opacity = 0;
   document.getElementById('lose-gif-container').style.display = 'none';
   document.getElementById('lose-gif-container').style.opacity = 0;
-  document.getElementById('lose-poo-left').style.display = 'none';
-  document.getElementById('lose-poo-right').style.display = 'none';
+  
   document.querySelectorAll('.falling-poo').forEach(el => el.remove());
   setBlur(false);
   mobileInput.blur();
