@@ -64,7 +64,7 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
 </head>
 <body>
 
-<div style="position:fixed;top:5px;left:5px;font-size:12px;color:#206cd2;font-family:'GROBOLD',sans-serif;z-index:120000;opacity:0.7;">v4.2.0.6.9</div>
+<div style="position:fixed;top:5px;left:5px;font-size:12px;color:#206cd2;font-family:'GROBOLD',sans-serif;z-index:120000;opacity:0.7;">v4.2.0.6.9.1</div>
 <div id="mode-select-overlay">
   <h1 style="font-size:72px;color:#206cd2;margin-bottom:20px;text-shadow:0 0 10px #00ff00,0 0 20px #00ff00,0 0 30px #00ff00">GLABDLE</h1>
   <h2 class="mode-title">Choose Mode</h2>
@@ -369,40 +369,84 @@ async function processGuess(guess){
 
     // win
     if(guess === targetWord){
-      gameOver = true; mobileInput.blur(); saveGameState();
-      setTimeout(()=>{
-        setBlur(true);
-        // show gif
-        const gifContainer = document.getElementById('win-gif-container');
-        const randomId = winningGifs[Math.floor(Math.random()*winningGifs.length)];
-        gifContainer.innerHTML = "";
-        const embedDiv=document.createElement('div'); embedDiv.className='tenor-gif-embed'; embedDiv.setAttribute('data-postid', randomId); embedDiv.setAttribute('data-share-method','host'); embedDiv.setAttribute('data-aspect-ratio','1'); embedDiv.setAttribute('data-width','100%'); gifContainer.appendChild(embedDiv);
-        const script=document.createElement('script'); script.type='text/javascript'; script.async=true; script.src='https://tenor.com/embed.js'; gifContainer.appendChild(script);
-        fadeIn(gifContainer); startPoopRain(80);
-        setTimeout(()=>{ fadeOut(gifContainer); document.getElementById('win-message').style.display='block'; }, 4000);
-        sessionStorage.setItem('glabble_restore','1');
-        setTimeout(()=>{ window.location.href='https://hosky.io'; }, 8000);
-      }, 800);
-      return;
-    }
+  gameOver = true; 
+  mobileInput.blur(); 
+  saveGameState();
+  setBlur(true);
+
+  // ADD BUTTONS FIRST
+  addWinButtons();
+
+  // show gif
+  const gifContainer = document.getElementById('win-gif-container');
+  const randomId = winningGifs[Math.floor(Math.random()*winningGifs.length)];
+  gifContainer.innerHTML = "";
+  const embedDiv=document.createElement('div'); 
+  embedDiv.className='tenor-gif-embed'; 
+  embedDiv.setAttribute('data-postid', randomId); 
+  embedDiv.setAttribute('data-share-method','host'); 
+  embedDiv.setAttribute('data-aspect-ratio','1'); 
+  embedDiv.setAttribute('data-width','100%'); 
+  gifContainer.appendChild(embedDiv);
+  const script=document.createElement('script'); 
+  script.type='text/javascript'; script.async=true; 
+  script.src='https://tenor.com/embed.js'; 
+  gifContainer.appendChild(script);
+  fadeIn(gifContainer); 
+  startPoopRain(80);
+
+  setTimeout(()=>{
+    fadeOut(gifContainer); 
+    document.getElementById('win-message').style.display='block';
+  }, 4000);
+
+  sessionStorage.setItem('glabble_restore','1');
+  setTimeout(()=>{ window.location.href='https://hosky.io'; }, 8000);
+  return;
+}
+
 
     // lose
-    if(currentRow === 5){
-      gameOver=true;
-      const correctDisplay = document.getElementById('correct-word-display');
-      correctDisplay.textContent = targetWord.toUpperCase(); correctDisplay.style.display='block';
-      setBlur(true); mobileInput.blur(); saveGameState(); document.getElementById('lose-poo-left').style.display='block'; document.getElementById('lose-poo-right').style.display='block';
-      startLosePoopRain(40);
-      const loseGifs=["6289320449545116130","24576363","5408039","1639610178022128587","1514012758219765433"];
-      const gifContainer=document.getElementById('lose-gif-container');
-      const randomId=loseGifs[Math.floor(Math.random()*loseGifs.length)];
-      gifContainer.innerHTML=""; const embedDiv=document.createElement('div'); embedDiv.className='tenor-gif-embed'; embedDiv.setAttribute('data-postid', randomId); embedDiv.setAttribute('data-share-method','host'); embedDiv.setAttribute('data-aspect-ratio','1'); embedDiv.setAttribute('data-width','100%'); gifContainer.appendChild(embedDiv);
-      const script=document.createElement('script'); script.type='text/javascript'; script.async=true; script.src='https://tenor.com/embed.js'; gifContainer.appendChild(script);
-      fadeIn(gifContainer); setTimeout(()=>{ fadeOut(gifContainer); document.getElementById('lose-message').style.display='block'; }, 4000);
-      sessionStorage.setItem('glabble_restore','1');
-      setTimeout(()=>{ window.location.href='https://hosky.io'; }, 8000);
-      return;
-    }
+   if(currentRow === 5){
+  gameOver = true;
+  const correctDisplay = document.getElementById('correct-word-display');
+  correctDisplay.textContent = targetWord.toUpperCase(); 
+  correctDisplay.style.display='block';
+  setBlur(true); 
+  mobileInput.blur(); 
+  saveGameState(); 
+  document.getElementById('lose-poo-left').style.display='block'; 
+  document.getElementById('lose-poo-right').style.display='block';
+  
+  // ADD BUTTONS FIRST
+  addLoseButtons();
+
+  startLosePoopRain(40);
+  const loseGifs=["6289320449545116130","24576363","5408039","1639610178022128587","1514012758219765433"];
+  const gifContainer=document.getElementById('lose-gif-container');
+  const randomId=loseGifs[Math.floor(Math.random()*loseGifs.length)];
+  gifContainer.innerHTML="";
+  const embedDiv=document.createElement('div'); 
+  embedDiv.className='tenor-gif-embed'; 
+  embedDiv.setAttribute('data-postid', randomId); 
+  embedDiv.setAttribute('data-share-method','host'); 
+  embedDiv.setAttribute('data-aspect-ratio','1'); 
+  embedDiv.setAttribute('data-width','100%'); 
+  gifContainer.appendChild(embedDiv);
+  const script=document.createElement('script'); 
+  script.type='text/javascript'; script.async=true; 
+  script.src='https://tenor.com/embed.js'; 
+  gifContainer.appendChild(script);
+  fadeIn(gifContainer); 
+  setTimeout(()=>{
+    fadeOut(gifContainer); 
+    document.getElementById('lose-message').style.display='block';
+  }, 4000);
+
+  sessionStorage.setItem('glabble_restore','1');
+  setTimeout(()=>{ window.location.href='https://hosky.io'; }, 8000);
+  return;
+}
 
     // profanity
     if(checkProfanity(guess)){
