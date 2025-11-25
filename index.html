@@ -433,7 +433,27 @@ document.querySelectorAll('.letter-box').forEach(box => box.addEventListener('cl
 }));
 
 // helpers
-function updateAlphabet(letter,state){ const box=document.getElementById(`letter-${letter}`); if(!box) return; if(state==='green'){box.style.backgroundColor='#206cd2';box.style.color='black'} else if(state==='yellow'){box.style.backgroundColor='#ffc107';box.style.color='black'} else {box.style.backgroundColor='#555';box.style.color='black'} }
+function updateAlphabet(letter, state) {
+    const box = document.getElementById(`letter-${letter}`);
+    if(!box) return;
+    
+    // Get current background color
+    const currentBg = box.style.backgroundColor;
+    
+    // If already green, never change it
+    if(currentBg === 'rgb(0, 255, 0)' || currentBg === '#00ff00') return;
+    
+    // Green = letter is in the word (yellow or blue on board)
+    if(state === 'green' || state === 'yellow') {
+        box.style.backgroundColor = '#00ff00';  // bright green
+        box.style.color = 'black';
+    }
+    // Gray = letter not in word (only if not already green)
+    else if(state === 'gray') {
+        box.style.backgroundColor = '#555';
+        box.style.color = 'black';
+    }
+}
 function updateActiveCell(){ document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active')); const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell'); if(currentCol<0) currentCol=0; if(currentCol>=wordLength) currentCol=wordLength-1; if(currentCol<wordLength) cells[currentCol].classList.add('active'); if(window.innerWidth<=500){ setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50); } }
 function setBlur(enable){ gameWrapper.style.filter = enable ? 'blur(5px)' : 'none' }
 function fadeIn(el){ el.style.display='block'; requestAnimationFrame(()=>el.style.opacity='1') }
@@ -516,12 +536,16 @@ async function processGuess(guess){
     for(let i=0;i<wordLength;i++){ if(results[i]==='gray' && letterCounts[guessLetters[i]]>0){ results[i]='yellow'; letterCounts[guessLetters[i]]--; } }
 
     for(let i=0;i<wordLength;i++){
-      cells[i].classList.remove('green','yellow','gray');
-      cells[i].classList.add(results[i]);
-      updateAlphabet(cells[i].textContent, results[i]);
-      cells[i].style.animation = `revealLetter 0.6s ease forwards ${i*0.15}s`;
-      cells[i].addEventListener('animationend', ()=>cells[i].style.animation='', { once:true });
-    }
+    cells[i].classList.remove('green','yellow','gray');
+    cells[i].classList.add(results[i]);
+    
+    // For keyboard: green/yellow on board = green on keyboard
+    const keyboardState = (results[i] === 'green' || results[i] === 'yellow') ? 'green' : 'gray';
+    updateAlphabet(cells[i].textContent, keyboardState);
+    
+    cells[i].style.animation = `revealLetter 0.6s ease forwards ${i*0.15}s`;
+    cells[i].addEventListener('animationend', ()=>cells[i].style.animation='', { once:true });
+}
 
     cells.forEach(c=>c.classList.add('locked'));
     saveGameState();
@@ -780,14 +804,60 @@ function addWinButtons(){ const existing=document.getElementById('win-buttons-co
   function createButton(text,onClick){ const btn=document.createElement('button'); btn.textContent=text; btn.style.fontFamily='GROBOLD, sans-serif'; btn.style.fontSize='20px'; btn.style.padding='14px 28px'; btn.style.cursor='pointer'; btn.style.borderRadius='6px'; btn.style.border='2px solid #206cd2'; btn.style.backgroundColor='#ff7f00'; btn.style.color='black'; btn.style.transition='all .2s ease'; btn.addEventListener('mouseover',()=>{btn.style.backgroundColor='#206cd2';btn.style.color='black';btn.style.transform='scale(1.1)';btn.style.boxShadow='0 0 15px #206cd2'}); btn.addEventListener('mouseout',()=>{btn.style.backgroundColor='#ff7f00';btn.style.color='black';btn.style.transform='scale(1)';btn.style.boxShadow='none'}); btn.addEventListener('click',onClick); return btn; }
   const newGameBtn = createButton('NEW GAME', () => {
     container.remove();
-    gameWrapper.style.display = 'none';          // hide game
-    document.getElementById('win-message').style.display = 'none';
-    document.getElementById('lose-message').style.display = 'none';
-    document.getElementById('alphabet').style.filter = 'none';
+    currentRow=0; currentCol=0; gameOver=false;
+    document.getElementById('win-message').style.display='none';
+    document.getElementById('lose-message').style.display='none';
+    document.getElementById('correct-word-display').style.display='none';
     setBlur(false);
+    document.getElementById('alphabet').style.filter='none';
     
-    // show Hosky mode menu
-    document.getElementById('hosky-options-overlay').style.display = 'flex';
+    // Clear board
+    for(let r=0;r<6;r++){
+        const cells=document.getElementById(`row${r}`).querySelectorAll('.cell');
+        cells.forEach(c=>{c.textContent='';c.className='cell'});
+    }
+    
+    // Reset keyboard colors
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{
+        const box=document.getElementById(`letter-${l}`);
+        if(box){
+            box.style.backgroundColor='rgba(0,0,0,0.9)';
+            box.style.color='#206cd2';
+        }
+    });
+    
+    // Start new game in current mode
+    const modeToUse = selectedMode || sessionStorage.getItem('glabble_mode') || 'HOSKY';
+    if(modeToUse === 'NORMAL'){
+        gibberishMode = false;
+        fetch('https://random-word-api.vercel.app/api?words=1&length=5')
+            .then(res=>res.json())
+            .then(data=>{
+                targetWord=data[0].toUpperCase();
+                wordLength=5;
+                adjustBoardForWordLength();
+                saveGameState();
+            })
+            .catch(()=>{
+                targetWord='APPLE';
+                wordLength=5;
+                adjustBoardForWordLength();
+                saveGameState();
+            });
+    } else {
+        const persistedDiff = sessionStorage.getItem('glabble_hosky_difficulty') || hoskyDifficulty || 'HARD';
+        hoskyDifficulty = persistedDiff;
+        gibberishMode = (hoskyDifficulty==='GIBBERISH');
+        targetWord = pickHoskyWord(hoskyDifficulty);
+        wordLength = targetWord.length;
+        adjustBoardForWordLength();
+        saveGameState();
+    }
+    
+    if(window.innerWidth<=500){
+        mobileInput.focus();
+        setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
+    }
 });
 
   const pampGlabsBtn=createButton('PAMP GLABS', ()=>{ window.open("https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZUVuIExhYnJhZG9yIl19",'_blank'); });
