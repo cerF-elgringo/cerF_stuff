@@ -7,11 +7,28 @@
 <link href="https://fonts.cdnfonts.com/css/grobold" rel="stylesheet">
 
 <style>
+/* Hide scrollbars visually (no visible scrollbars anywhere) */
+html, body {
+  -ms-overflow-style: none;  /* IE/Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
 * { box-sizing: border-box; margin:0; padding:0; }
 html, body {
-    height: 100%; width: 100%; overflow-x: hidden;
+    min-height: 100%;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;          /* <- NEVER show page scrollbars */
     font-family: 'GROBOLD', sans-serif;
-    display: flex; justify-content: center; align-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;   /* center vertically when content fits */
+    padding: 28px;         /* keep a comfortable gap from the viewport edges */
     background-color: black;
     color: #206cd2;
     background-image: url('https://hosky.io/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FHosky_1200.9361cc3f.png&w=3840&q=85&dpl=dpl_A35He1TJdeTQghKRghvecRxzGvvJ');
@@ -21,18 +38,36 @@ html, body {
 
 #game-wrapper {
     display: none; /* hidden until mode selected */
-    flex-direction: column; align-items: center;
+    flex-direction: column;
+    align-items: center;
     background-color: rgba(0,0,0,0.5);
-    min-width: 340px; max-width: 90vw; padding: 20px;
+    min-width: 340px;
+    max-width: 90vw;
+    padding: 20px;
     border-radius: 10px;
-}
 
+    /* keep centered, do NOT add internal scrollbars */
+    max-height: none;
+    overflow: visible;
+    -webkit-overflow-scrolling: auto;
+}
 h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
     text-shadow: 0 0 5px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
 }
 
-#game-container { display: grid; grid-template-rows: repeat(6, 60px); grid-gap: 10px; margin-bottom: 20px; }
-.row { display: grid; grid-template-columns: repeat(5, 60px); grid-gap: 10px; }
+#game-container {
+  display: grid;
+  grid-template-rows: repeat(6, auto); /* allow JS to set row heights */
+  grid-gap: 10px;
+  margin-bottom: 20px;
+  width: 100%;
+  overflow: visible;
+}
+.row {
+    display: grid;
+    grid-gap: 10px;
+    justify-content: center; /* center the row when it's narrower than the wrapper */
+}
 .cell { 
     width: 63px; 
     height: 63px; 
@@ -274,8 +309,8 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
     <h1 style="font-size:72px; color:#206cd2; text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; margin-bottom:20px;">GLABDLE</h1>
     <h2 class="mode-title">Choose Mode</h2>
     <div style="display:flex; gap:20px;">
-        <button class="mode-btn" id="hosky-btn">HOSKY Words</button>
-        <button class="mode-btn" id="normal-btn">NORMAL Words</button>
+        <button class="mode-btn" id="hosky-btn" type="button">HOSKY Words</button>
+        <button class="mode-btn" id="normal-btn" type="button">NORMAL Words</button>
     </div>
 </div>
 <div id="correct-word-display" style="
@@ -321,9 +356,16 @@ h1 { font-size: 72px; margin-bottom: 20px; color: #206cd2;
 
 // Detect if page is loaded normally (not via back/forward)
 window.addEventListener('load', () => {
-    if(!performance.getEntriesByType("navigation")[0].type.includes("back_forward")){
-        // Normal refresh → clear saved game
-        sessionStorage.removeItem('glabble_state');
+    try {
+        const nav = performance.getEntriesByType("navigation")[0];
+        if(!nav || !nav.type.includes("back_forward")){
+            // Normal refresh → clear saved game
+            sessionStorage.removeItem('glabble_state');
+            document.getElementById('mode-select-overlay').style.display = 'flex';
+            gameWrapper.style.display = 'none';
+        }
+    } catch (e) {
+        // fallback - show overlay
         document.getElementById('mode-select-overlay').style.display = 'flex';
         gameWrapper.style.display = 'none';
     }
@@ -369,15 +411,19 @@ window.addEventListener('pageshow', (event) => {
             addLoseButtons();
         }
     }, 500);
+
+    // Adjust board sizing now that wrapper is visible and state is loaded
+    requestAnimationFrame(() => setTimeout(adjustBoardForWordLength, 20));
 });
-
-
-
-
 
 // --- GAME MODE VARIABLES ---
 let selectedMode = 'HOSKY'; // default
 let targetWord = "HOSKY";   // must be let, can change for NORMAL
+let wordLength = 5;         // dynamic: will match targetWord.length when mode chosen
+const hoskyPool = ["CHARLES","JKRO","JKROBAR","ALPHA","DANKSY","TBLH","THEBIGLEHOSKY",
+    "RADIOACTIVE","GLAB","ZERO","NOOB","DEGEN","DEGENERAL","DISCORD",
+    "CABAL","WEN","MOON","RUG","WOOF","RUGPOOL","WENWEBSITE","WENPDF",
+    "CURRYWURST","WOOSHIE","SCHMACK","BOSSKY","BIGBOSSKY"];
 const extraWords = ["HOSKY","GLABS"];
 const triggerWords = ["SAYOS","VEGAS","JINXY","CERFY","GLABS"];
 const gameWrapper = document.getElementById('game-wrapper');
@@ -399,18 +445,125 @@ async function isValidWord(word){
 const profaneWords = ["fuck","shit","bitch","bastard","dick","cunt","asshole","nigger","faggot","slut","whore","cock","pussy","douche"];
 function checkProfanity(word){return profaneWords.some(p=>word.toLowerCase().includes(p));}
 
+// Adjust the board to current wordLength: recreate rows/cells and set mobile maxlength
+async function adjustBoardForWordLength(){
+    const mi = document.getElementById('mobile-input');
+    if(mi) mi.maxLength = wordLength;
+
+    const wrapper = document.getElementById('game-wrapper');
+    const container = document.getElementById('game-container');
+    const gap = 10; // matches CSS grid-gap
+    const totalGapsH = (Math.max(1, wordLength) - 1) * gap;
+    const totalGapsV = (6 - 1) * gap; // vertical gaps between rows
+
+    // If wrapper is hidden, retry shortly (measurements would be wrong)
+    const wrapperStyle = wrapper ? getComputedStyle(wrapper) : null;
+    if (!wrapper || wrapperStyle.display === 'none' || wrapper.clientWidth < 20) {
+        requestAnimationFrame(() => setTimeout(adjustBoardForWordLength, 40));
+        return;
+    }
+
+    // Wait for fonts to be ready (if supported) so title height is accurate
+    try {
+        if (document.fonts && document.fonts.status !== 'loaded') {
+            await document.fonts.ready;
+            await new Promise(res => setTimeout(res, 20));
+        }
+    } catch (e) {
+        // ignore
+    }
+
+    // compute body padding (we need to respect the page padding)
+    const bodyStyle = getComputedStyle(document.body);
+    const bodyPaddingTop = parseFloat(bodyStyle.paddingTop || 0);
+    const bodyPaddingBottom = parseFloat(bodyStyle.paddingBottom || 0);
+
+    // Measure available width inside the wrapper (clientWidth respects wrapper padding)
+    const wrapperWidth = Math.max(220, wrapper.clientWidth || Math.floor(window.innerWidth * 0.9));
+    const availableWidth = Math.max(160, wrapperWidth);
+
+    // Measure title + keyboard heights (accurate measured height)
+    const titleEl = wrapper.querySelector('h1');
+    const alphabetEl = document.getElementById('alphabet');
+    const titleH = titleEl ? Math.ceil(titleEl.getBoundingClientRect().height) : 0;
+    const keyboardH = alphabetEl ? Math.ceil(alphabetEl.getBoundingClientRect().height) : 72; // fallback
+
+    // breathing room for margins and overlays
+    const verticalReserve = 40; // px (smaller to prefer fitting)
+
+    // usable height for the six rows: viewport minus body paddings, title, keyboard and reserve
+    const usableHeight = Math.max(120, window.innerHeight - bodyPaddingTop - bodyPaddingBottom - titleH - keyboardH - verticalReserve);
+
+    // compute constraints
+    const cellByWidth = Math.floor((availableWidth - totalGapsH) / Math.max(1, wordLength));
+    const cellByHeight = Math.floor((usableHeight - totalGapsV) / 6);
+
+    // limits: never bigger than original design, but allow small as last resort
+    const ORIGINAL_CELL = 63;
+    const MIN_CELL = 14;      // keep letters still readable while ensuring fit
+
+    // choose smallest constraint so everything fits
+    let cellSize = Math.min(cellByWidth, cellByHeight, ORIGINAL_CELL);
+    if (cellSize < MIN_CELL) cellSize = MIN_CELL;
+
+    // final precaution: if computed layout is still taller than viewport (very small screens),
+    // shrink further proportionally
+    const totalBoardHeight = (cellSize * 6) + totalGapsV + titleH + keyboardH + verticalReserve + bodyPaddingTop + bodyPaddingBottom;
+    if (totalBoardHeight > window.innerHeight) {
+        const availableForCells = Math.max((window.innerHeight - titleH - keyboardH - verticalReserve - totalGapsV - bodyPaddingTop - bodyPaddingBottom), MIN_CELL * 6);
+        const newCell = Math.floor(availableForCells / 6);
+        cellSize = Math.max(MIN_CELL, Math.min(cellSize, newCell));
+    }
+
+    // font size: scale but do not exceed original
+    const fontSize = Math.min(36, Math.max(10, Math.floor(cellSize * 0.6)));
+
+    // ensure no forced internal scrollbars; center content
+    container.style.overflowX = 'hidden';
+    container.style.minWidth = '';
+    container.style.justifyContent = 'center';
+
+    // set container row heights so rows don't overlap vertically
+    container.style.gridTemplateRows = `repeat(6, ${cellSize}px)`;
+
+    // recreate cells for each row using the calculated sizes
+    for(let r=0;r<6;r++){
+        const row = document.getElementById(`row${r}`);
+        if(!row) continue;
+        row.style.gridTemplateColumns = `repeat(${wordLength}, ${cellSize}px)`;
+        row.style.height = `${cellSize}px`;
+        row.innerHTML = '';
+        createCells(row, r, cellSize, fontSize);
+        row.style.justifyContent = 'center';
+    }
+
+    updateActiveCell();
+}
+
 // --- MODE BUTTONS LOGIC (BOARD VISIBLE AFTER CLICK) ---
 document.getElementById('hosky-btn').addEventListener('click', () => {
     selectedMode = 'HOSKY';
-    targetWord = "HOSKY";
+    // pick a hosky target word from pool
+    const chosen = hoskyPool[Math.floor(Math.random() * hoskyPool.length)];
+    targetWord = chosen.toUpperCase();
+    wordLength = targetWord.length;
+
+    // show UI first, THEN measure/adjust (ensures measurements are correct)
     document.getElementById('mode-select-overlay').style.display = 'none';
     gameWrapper.style.display = 'flex';
+    requestAnimationFrame(() => setTimeout(adjustBoardForWordLength, 20));
+    saveGameState();
 });
 
 document.getElementById('normal-btn').addEventListener('click', async () => {
     selectedMode = 'NORMAL';
+    // normal mode is always 5 letters
+    wordLength = 5;
+
+    // show UI first, THEN measure/adjust
     document.getElementById('mode-select-overlay').style.display = 'none';
     gameWrapper.style.display = 'flex';
+    requestAnimationFrame(() => setTimeout(adjustBoardForWordLength, 20));
 
     try {
         const res = await fetch('https://random-word-api.vercel.app/api?words=1&length=5');
@@ -433,14 +586,19 @@ document.getElementById('normal-btn').addEventListener('click', async () => {
 
 
 // --- CREATE CELLS ---
-function createCells(row,rowIndex){
-    for(let i=0;i<5;i++){
+function createCells(row,rowIndex, cellSize = 63, fontSize = 36){
+    for(let i=0;i<wordLength;i++){
         const cell = document.createElement('div');
         cell.classList.add('cell');
+        // apply inline size adjustments so different lengths look OK
+        cell.style.width = `${cellSize}px`;
+        cell.style.height = `${cellSize}px`;
+        cell.style.fontSize = `${fontSize}px`;
         row.appendChild(cell);
         cell.addEventListener('click', ()=>{if(rowIndex===currentRow && !gameOver){currentCol=i;updateActiveCell(); if(window.innerWidth <= 500) document.getElementById('mobile-input').focus(); row.scrollIntoView({behavior:'smooth', block:'center'});}});
     }
 }
+// initial creation: default 5-letter board
 for(let i=0;i<6;i++) createCells(document.getElementById(`row${i}`), i);
 
 // --- ALPHABET + ENTER + BACKSPACE ---
@@ -495,7 +653,9 @@ function updateAlphabet(letter,state){
 function updateActiveCell(){
     document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));
     const cells=document.getElementById(`row${currentRow}`).querySelectorAll('.cell');
-    if(currentCol<5) cells[currentCol].classList.add('active');
+    if(currentCol < 0) currentCol = 0;
+    if(currentCol >= wordLength) currentCol = wordLength - 1;
+    if(currentCol<wordLength) cells[currentCol].classList.add('active');
     if(window.innerWidth <= 500){setTimeout(()=>document.getElementById(`row${currentRow}`).scrollIntoView({behavior:'smooth', block:'center'}),50);}
 }
 
@@ -516,17 +676,58 @@ function saveGameState(){
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{const box=document.getElementById(`letter-${l}`); if(box) alphabetState[l]=box.style.backgroundColor;});
     state.alphabet = alphabetState;
     sessionStorage.setItem('glabble_state',JSON.stringify(state));
+    // persist current mode too
+    sessionStorage.setItem('glabble_mode', selectedMode);
 }
 
 function loadGameState(){
-    const state = JSON.parse(sessionStorage.getItem('glabble_state')); if(!state) return;
-    currentRow = state.currentRow; currentCol = state.currentCol; gameOver = state.gameOver || false;
-    for(let r=0;r<6;r++){
-        const cells=document.getElementById(`row${r}`).querySelectorAll('.cell');
-        cells.forEach((c,i)=>{c.textContent=state.board[r][i].letter;c.className=state.board[r][i].classes;});
+    const stateRaw = sessionStorage.getItem('glabble_state');
+    if(!stateRaw) return;
+    const state = JSON.parse(stateRaw);
+
+    // Restore selected mode from saved state if present; fallback to separate key, then keep current selectedMode
+    if (state.selectedMode) {
+        selectedMode = state.selectedMode;
+    } else {
+        const persistedMode = sessionStorage.getItem('glabble_mode');
+        if (persistedMode === 'NORMAL' || persistedMode === 'HOSKY') selectedMode = persistedMode;
     }
-    if(state.alphabet){for(let l in state.alphabet){const box=document.getElementById(`letter-${l}`); if(box) box.style.backgroundColor=state.alphabet[l];}}
-    updateActiveCell(); if(gameOver) mobileInput.blur();
+
+    // If saved board uses a different length, restore that length
+    if(state.board && state.board[0] && state.board[0].length){
+        wordLength = state.board[0].length;
+        adjustBoardForWordLength();
+    }
+
+    currentRow = state.currentRow;
+    currentCol = state.currentCol;
+    gameOver = state.gameOver || false;
+
+    for(let r=0;r<6;r++){
+        const cells = document.getElementById(`row${r}`).querySelectorAll('.cell');
+        if(!state.board[r]) continue;
+        cells.forEach((c,i) => {
+            if(state.board[r][i]){
+                c.textContent = state.board[r][i].letter;
+                c.className = state.board[r][i].classes;
+                // ensure base 'cell' class present
+                if(!c.classList.contains('cell')) c.classList.add('cell');
+            } else {
+                c.textContent = '';
+                c.className = 'cell';
+            }
+        });
+    }
+
+    if(state.alphabet){
+        for(let l in state.alphabet){
+            const box = document.getElementById(`letter-${l}`);
+            if(box) box.style.backgroundColor = state.alphabet[l];
+        }
+    }
+
+    updateActiveCell();
+    if(gameOver) mobileInput.blur();
 }
 
 // --- INPUT ---
@@ -560,7 +761,7 @@ async function handleKey(key){
         return;
     }
     if(/^[a-zA-Z]$/.test(key)){
-        if(currentCol<5){cells[currentCol].textContent=key.toUpperCase();if(currentCol<4) currentCol++; updateActiveCell(); saveGameState();}
+        if(currentCol<wordLength){cells[currentCol].textContent=key.toUpperCase();if(currentCol<wordLength-1) currentCol++; updateActiveCell(); saveGameState();}
     }
 }
 
@@ -570,7 +771,7 @@ const redirects={
     "VEGAS":["https://x.com/HoskyDevVegas/status/1947043091216494826","https://www.dreamvacations.com/vacation/destinations/all","https://www.youtube.com/watch?v=1DUaR0zBGgQ","https://www.christinascucina.com/beans-on-toast-the-proper-british-way-recipe-by-a-brit/","https://www.urbandictionary.com/define.php?term=foo-foo%20drink"],
     "JINXY":["https://en.wikipedia.org/wiki/Flat_bean","https://www.reddit.com/r/Netherlands/comments/1ghutfw/what_are_some_crucial_traditional_dutch/","https://www.thedutchtable.com/2010/10/bitterballen-dutch-deep-fried-gravy.html"],
     "CERFY":["https://www.youtube.com/watch?v=aBquLj4kLxQ","https://www.youtube.com/watch?v=4npQAvzrND0","https://www.imdb.com/title/tt1990216/","https://www.youtube.com/watch?v=_ngkB44qaQw"],
-    "GLABS":["https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19"]
+    "GLABS":["https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZUVuIExhYnJhZG9yIl19"]
 };
 
 async function processGuess(guess){
@@ -599,8 +800,8 @@ async function processGuess(guess){
     });
 
     // --- First pass: mark greens ---
-    const results = Array(5).fill('gray');
-    for(let i=0; i<5; i++){
+    const results = Array(wordLength).fill('gray');
+    for(let i=0; i<wordLength; i++){
         if(guessLetters[i] === targetLetters[i]){
             results[i] = 'green';
             letterCounts[guessLetters[i]]--;
@@ -608,7 +809,7 @@ async function processGuess(guess){
     }
 
     // --- Second pass: mark yellows ---
-    for(let i=0; i<5; i++){
+    for(let i=0; i<wordLength; i++){
         if(results[i] === 'gray' && letterCounts[guessLetters[i]] > 0){
             results[i] = 'yellow';
             letterCounts[guessLetters[i]]--;
@@ -616,7 +817,7 @@ async function processGuess(guess){
     }
 
     // --- Apply colors to cells & alphabet ---
-    for(let i=0; i<5; i++){
+    for(let i=0; i<wordLength; i++){
     cells[i].classList.remove('green','yellow','gray');
     cells[i].classList.add(results[i]);
     updateAlphabet(cells[i].textContent, results[i]);
@@ -711,7 +912,7 @@ function showWinningGif(){
     const gifContainer=document.getElementById('win-gif-container');
     const randomId=winningGifs[Math.floor(Math.random()*winningGifs.length)];
     gifContainer.innerHTML="";
-    const embedDiv=document.createElement("div");
+    const embedDiv=document.createElement('div');
     embedDiv.className="tenor-gif-embed";
     embedDiv.setAttribute("data-postid",randomId);
     embedDiv.setAttribute("data-share-method","host");
@@ -731,12 +932,42 @@ window.addEventListener('load', () => {
         gameWrapper.style.display = 'flex';
         loadGameState();
 
+        // ensure we size after layout settles
+        requestAnimationFrame(() => setTimeout(adjustBoardForWordLength, 20));
+
         if(window.innerWidth <= 500 && !gameOver){ // <-- only focus if game NOT over
             mobileInput.focus();
             setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
         }
+    } else {
+        // No saved state: ensure overlay is visible (already handled above) and sizing stays default
     }
 });
+
+// Debounce helper
+function debounce(fn, wait = 120) {
+  let t;
+  return function(...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+// Debounced adjust on resize/orientation/pageshow
+const debouncedAdjust = debounce(() => {
+  requestAnimationFrame(() => adjustBoardForWordLength());
+}, 120);
+
+window.addEventListener('resize', debouncedAdjust);
+window.addEventListener('orientationchange', debouncedAdjust);
+window.addEventListener('pageshow', debouncedAdjust);
+
+// Ensure initial sizing once fonts/layout are ready
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => setTimeout(adjustBoardForWordLength, 40)).catch(()=>setTimeout(adjustBoardForWordLength,40));
+} else {
+  setTimeout(adjustBoardForWordLength,40);
+}
 
 // --- LOSE BUTTONS ---
 // --- LOSE BUTTONS ---
@@ -748,7 +979,7 @@ function addLoseButtons() {
     const container = document.createElement('div');
     container.id = 'lose-buttons-container';
     container.style.position = 'fixed';
-    container.style.bottom = '50px'; // lower on screen
+    container.style.bottom = '50px';
     container.style.left = '50%';
     container.style.transform = 'translateX(-50%)';
     container.style.display = 'flex';
@@ -762,6 +993,7 @@ function addLoseButtons() {
 
     function createButton(text, onClick) {
         const btn = document.createElement('button');
+        btn.type = 'button';
         btn.textContent = text;
         btn.style.fontFamily = 'GROBOLD, sans-serif';
         btn.style.fontSize = '15px';
@@ -773,7 +1005,7 @@ function addLoseButtons() {
         btn.style.color = 'black';
         btn.style.minWidth = '140px';
         btn.style.maxWidth = '180px';
-        btn.style.flex = '1 1 auto'; // flex-grow and shrink allowed
+        btn.style.flex = '1 1 auto';
 
         btn.addEventListener('mouseover', () => {
             btn.style.backgroundColor = '#206cd2';
@@ -787,56 +1019,81 @@ function addLoseButtons() {
         return btn;
     }
 
-    // Buttons
-    const retryBtn = createButton('TRY THIS WORD AGAIN', () => {
-        container.remove();
-        currentRow = 0; currentCol = 0; gameOver = false;
-        document.getElementById('lose-message').style.display='none';
-        document.getElementById('correct-word-display').style.display='none';
-        setBlur(false);
-        for(let r=0;r<6;r++){
-            const cells = document.getElementById(`row${r}`).querySelectorAll('.cell');
-            cells.forEach(c => { c.textContent=''; c.className='cell'; });
-        }
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{
-            const box = document.getElementById(`letter-${l}`);
-            if(box){ box.style.backgroundColor=''; box.style.color='#206cd2'; }
-        });
-        saveGameState();
-    });
+    // Prefer the current in-memory mode first, fallback to persisted session value
+    const persistedModeLabel = sessionStorage.getItem('glabble_mode');
+    const defaultModeForLabel = (selectedMode === 'HOSKY' || selectedMode === 'NORMAL') ? selectedMode
+        : (persistedModeLabel === 'HOSKY' || persistedModeLabel === 'NORMAL') ? persistedModeLabel
+        : 'HOSKY';
+    const newBtnLabel = (defaultModeForLabel === 'HOSKY') ? 'NEW HOSKY MODE GAME' : 'NEW WORD';
 
-    const newWordBtn = createButton('NEW WORD', () => {
+    const newWordBtn = createButton(newBtnLabel, () => {
         container.remove();
         currentRow = 0; currentCol = 0; gameOver = false;
-        document.getElementById('lose-message').style.display='none';
-        document.getElementById('correct-word-display').style.display='none';
+        document.getElementById('lose-message').style.display = 'none';
+        document.getElementById('correct-word-display').style.display = 'none';
         setBlur(false);
+
+        // clear board cells and classes
         for(let r=0;r<6;r++){
             const cells = document.getElementById(`row${r}`).querySelectorAll('.cell');
             cells.forEach(c => { c.textContent=''; c.className='cell'; });
         }
+        // reset keyboard colors
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{
             const box = document.getElementById(`letter-${l}`);
             if(box){ box.style.backgroundColor=''; box.style.color='#206cd2'; }
         });
-        if(selectedMode==='NORMAL'){
+
+        // Determine active mode (prefer in-memory selectedMode, fallback persisted)
+        const persisted = sessionStorage.getItem('glabble_mode');
+        const modeToUse = (selectedMode === 'HOSKY' || selectedMode === 'NORMAL') ? selectedMode
+            : (persisted === 'HOSKY' || persisted === 'NORMAL') ? persisted
+            : 'HOSKY';
+
+        // Persist the mode explicitly and set selectedMode
+        sessionStorage.setItem('glabble_mode', modeToUse);
+        selectedMode = modeToUse;
+
+        if(modeToUse === 'NORMAL'){
+            // NORMAL: fetch 5-letter word
             fetch('https://random-word-api.vercel.app/api?words=1&length=5')
             .then(res=>res.json())
-            .then(data=>{ targetWord = data[0].toUpperCase(); saveGameState(); })
-            .catch(()=>{ targetWord="APPLE"; saveGameState(); });
-        } else { targetWord="HOSKY"; }
+            .then(data=>{
+                targetWord = data[0].toUpperCase();
+                wordLength = 5;
+                adjustBoardForWordLength();
+                saveGameState();
+            })
+            .catch(()=>{
+                targetWord = "APPLE";
+                wordLength = 5;
+                adjustBoardForWordLength();
+                saveGameState();
+            });
+        } else {
+            // HOSKY: pick from pool
+            const chosen = hoskyPool[Math.floor(Math.random() * hoskyPool.length)];
+            targetWord = chosen.toUpperCase();
+            wordLength = targetWord.length;
+            adjustBoardForWordLength();
+            saveGameState();
+        }
+
+        // Focus mobile input on small screens
+        if (window.innerWidth <= 500) {
+            mobileInput.focus();
+            setTimeout(()=>document.getElementById(`row${currentRow}`)?.scrollIntoView({behavior:'smooth', block:'center'}),50);
+        }
     });
 
     const pampBtn = createButton('PAMP GLABS', () => {
-        window.open("https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19",'_blank');
+        window.open("https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZUVuIExhYnJhZG9yIl19",'_blank');
     });
 
-    container.appendChild(retryBtn);
     container.appendChild(newWordBtn);
     container.appendChild(pampBtn);
     document.body.appendChild(container);
 }
-
 
 // --- SHOW LOSE BUTTONS AFTER RETURN ---
 // Only show the correct buttons after returning or refreshing
@@ -919,7 +1176,7 @@ function addWinButtons() {
     });
 
     const pampGlabsBtn = createButton('PAMP GLABS', () => {
-        window.open("https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZGVuIExhYnJhZG9yIl19", '_blank');
+        window.open("https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZUVuIExhYnJhZG9yIl19", '_blank');
     });
 
     container.appendChild(newGameBtn);
