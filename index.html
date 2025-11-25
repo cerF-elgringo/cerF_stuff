@@ -2,10 +2,35 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>GLABDLE</title>
 <link href="https://fonts.cdnfonts.com/css/grobold" rel="stylesheet">
 <style>
+/* Mobile consistency fixes */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    font-size: 16px; /* Base font size */
+}
+
+body {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    touch-action: manipulation;
+}
 /* (CSS unchanged from previous working file) */
 html, body { -ms-overflow-style: none; scrollbar-width: none; overflow: hidden }
 html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; width:0; height:0; }
@@ -34,14 +59,42 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
     margin-right: auto;            /* centers it */
 }
 #letter-enter{margin-right:12px}#letter-backspace{margin-left:12px}
-@media(max-width:500px){html, body {
-    padding: 10px;
-  }
-  
-  h1 {
-    font-size: 56px;
-    margin-bottom: 15px;
-  }#letter-enter{margin-right:6px}#letter-backspace{margin-left:6px}}
+@media(max-width:500px), (max-device-width: 500px) {
+    html, body {
+        padding: 8px;
+    }
+    
+    h1 {
+        font-size: clamp(36px, 10vw, 56px);
+        margin-bottom: 12px;
+    }
+    
+    #game-wrapper {
+        padding: 12px;
+        min-width: 300px;
+    }
+    
+    .cell {
+        font-size: clamp(18px, 5vw, 36px);
+    }
+    
+    .letter-box {
+        font-size: clamp(14px, 3.5vw, 18px);
+    }
+    
+    #letter-enter, #letter-backspace {
+        width: 60px;
+        font-size: 14px;
+    }
+    
+    #letter-enter {
+        margin-right: 4px;
+    }
+    
+    #letter-backspace {
+        margin-left: 4px;
+    }
+}
 #letter-enter,#letter-backspace{width:80px;height:38px;border-radius:6px;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:bold;transition:all .2s ease}
 #letter-enter{background-color:#00ff00;color:black}
 #letter-enter:hover{background-color:#0000ff;transform:scale(1.05)}
@@ -313,7 +366,11 @@ function pickHoskyWord(difficulty='HARD'){
 
 // sizing/board (kept robust)
 async function adjustBoardForWordLength() {
-  const mi = document.getElementById('mobile-input'); 
+// Force layout recalculation on mobile
+  if(window.innerWidth <= 500) {
+    document.body.style.minHeight = window.innerHeight + 'px';
+  }  
+const mi = document.getElementById('mobile-input'); 
   if(mi) mi.maxLength = wordLength;
 
   const wrapper = document.getElementById('game-wrapper'); 
@@ -931,7 +988,34 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+// Prevent zoom on double-tap
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+    }
+    lastTouchEnd = now;
+}, false);
 
+// Handle orientation changes more robustly
+let resizeTimer;
+window.addEventListener('orientationchange', () => {
+    clearTimeout(resizeTimer);
+    document.body.style.minHeight = window.innerHeight + 'px';
+    resizeTimer = setTimeout(() => {
+        adjustBoardForWordLength();
+    }, 200);
+});
+
+// Prevent overscroll/bounce on iOS
+document.addEventListener('touchmove', (e) => {
+    if (e.target.closest('#game-container')) {
+        // Allow scrolling within game container
+        return;
+    }
+    e.preventDefault();
+}, { passive: false });
 
 </script>
 </body>
