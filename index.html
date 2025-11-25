@@ -65,6 +65,20 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
 <body>
 
 <div style="position:fixed;top:5px;left:5px;font-size:12px;color:#206cd2;font-family:'GROBOLD',sans-serif;z-index:120000;opacity:0.7;">v4.2.0.6.9</div>
+<!-- Home button -->
+<div id="home-button" title="Home" style="
+    position: fixed;
+    top: 25px;
+    left: 5px;
+    font-size: 20px;
+    color: #206cd2;
+    cursor: pointer;
+    z-index: 120001;
+    opacity: 0.8;
+">
+    🏠
+</div>
+
 <div id="mode-select-overlay">
   <h1 style="font-size:72px;color:#206cd2;margin-bottom:20px;text-shadow:0 0 10px #00ff00,0 0 20px #00ff00,0 0 30px #00ff00">GLABDLE</h1>
   <h2 class="mode-title">Choose Mode</h2>
@@ -134,6 +148,30 @@ let hoskyDifficulty = 'HARD';
 let gibberishMode = false;
 let targetWord = "HOSKY";
 let wordLength = 5;
+
+document.getElementById('home-button').addEventListener('click', () => {
+    // Hide game wrapper & messages
+    gameWrapper.style.display = 'none';
+    document.getElementById('win-message').style.display = 'none';
+    document.getElementById('lose-message').style.display = 'none';
+    document.getElementById('alphabet').style.filter = 'none';
+    setBlur(false);
+
+    // Hide Hosky mode menu if open
+    document.getElementById('hosky-options-overlay').style.display = 'none';
+
+    // Hide GIF containers & poop animations
+    document.getElementById('win-gif-container').style.display = 'none';
+    document.getElementById('lose-gif-container').style.display = 'none';
+    document.getElementById('lose-poo-left').style.display = 'none';
+    document.getElementById('lose-poo-right').style.display = 'none';
+    document.querySelectorAll('.falling-poo').forEach(el => el.remove());
+
+    // Show mode selection overlay
+    document.getElementById('mode-select-overlay').style.display = 'flex';
+});
+
+
 
 const hoskyPool = ["CHARLES","JKRO","JKROBAR","ALPHA","DANKSY","TBLH","THEBIGLEHOSKY","RADIOACTIVE","GLAB","ZERO","NOOB","DEGEN","DEGENERAL","DISCORD","CABAL","WEN","MOON","RUG","WOOF","RUGPOOL","WENWEBSITE","WENPDF","CURRYWURST","WOOSHIE","SCHMACK","BOSSKY","BIGBOSSKY", "SPAM", "RIGGED", "STAKE", "PAYDAY", "CARDANO", "RAIN", "RAFFLE", "CASHGRAB", "BIXBY", "HOSKY", "WENLAMBO", "DIMA", "DIMALIX", "TRYM", "QUANTUM", "MODS", "DEEZ", "DEEZNUTS", "VOTE", "TACO", "EGG", "WENWENWEN", "BULLISH", "BEARISH", "TAPTOOLS", "HOSKYTEN" ];
 const extraWords = ["HOSKY","GLABS"];
@@ -374,6 +412,19 @@ async function processGuess(guess){
   saveGameState();
   setBlur(true);
 
+// --- define once ---
+function goToHoskyOptionsMenu() {
+    // Hide game wrapper and messages
+    gameWrapper.style.display = 'none';
+    document.getElementById('win-message').style.display = 'none';
+    document.getElementById('lose-message').style.display = 'none';
+    document.getElementById('alphabet').style.filter = 'none';
+    setBlur(false);
+
+    // Show Hosky mode options overlay
+    document.getElementById('hosky-options-overlay').style.display = 'flex';
+}
+
   // ADD BUTTONS FIRST
   setTimeout(() => {
     addWinButtons();
@@ -582,7 +633,7 @@ function addLoseButtons(){ /* implementation identical to prior working version 
   const container=document.createElement('div'); container.id='lose-buttons-container'; container.style.position='fixed'; container.style.bottom='120px'; container.style.left='50%'; container.style.transform='translateX(-50%)'; container.style.display='flex'; container.style.flexDirection='row'; container.style.justifyContent='center'; container.style.alignItems='center'; container.style.gap='15px'; container.style.flexWrap='wrap'; container.style.maxWidth='90%'; container.style.zIndex='10005';
   function createButton(text,onClick){ const btn=document.createElement('button'); btn.type='button'; btn.textContent=text; btn.style.fontFamily='GROBOLD, sans-serif'; btn.style.fontSize='20px'; btn.style.padding='14px 28px'; btn.style.cursor='pointer'; btn.style.borderRadius='6px'; btn.style.border='2px solid #206cd2'; btn.style.backgroundColor='#ffa500'; btn.style.color='black'; btn.style.minWidth='180px'; btn.style.maxWidth='220px'; btn.style.flex='1 1 auto'; btn.addEventListener('mouseover',()=>{btn.style.backgroundColor='#206cd2';btn.style.color='black'}); btn.addEventListener('mouseout',()=>{btn.style.backgroundColor='#ffa500';btn.style.color='black'}); btn.addEventListener('click', onClick); return btn; }
   const defaultModeForLabel=(selectedMode==='HOSKY'||selectedMode==='NORMAL')?selectedMode:(sessionStorage.getItem('glabble_mode')==='HOSKY'||sessionStorage.getItem('glabble_mode')==='NORMAL')?sessionStorage.getItem('glabble_mode'):'HOSKY';
-  const newBtnLabel=(defaultModeForLabel==='HOSKY')?'NEW HOSKY MODE GAME':'NEW WORD';
+  const newBtnLabel=(defaultModeForLabel==='HOSKY')?'NEW GAME':'NEW WORD';
   const newWordBtn=createButton(newBtnLabel,()=>{
     container.remove();
     currentRow=0; currentCol=0; gameOver=false;
@@ -608,7 +659,18 @@ function addLoseButtons(){ /* implementation identical to prior working version 
 
 function addWinButtons(){ const existing=document.getElementById('win-buttons-container'); if(existing) existing.remove(); document.getElementById('alphabet').style.filter='blur(5px)'; const container=document.createElement('div'); container.id='win-buttons-container'; container.style.position='fixed'; container.style.bottom='120px'; container.style.left='50%'; container.style.transform='translateX(-50%)'; container.style.display='flex'; container.style.justifyContent='center'; container.style.alignItems='center'; container.style.gap='20px'; container.style.zIndex='10005'; container.style.flexWrap='wrap';
   function createButton(text,onClick){ const btn=document.createElement('button'); btn.textContent=text; btn.style.fontFamily='GROBOLD, sans-serif'; btn.style.fontSize='20px'; btn.style.padding='14px 28px'; btn.style.cursor='pointer'; btn.style.borderRadius='6px'; btn.style.border='2px solid #206cd2'; btn.style.backgroundColor='#ff7f00'; btn.style.color='black'; btn.style.transition='all .2s ease'; btn.addEventListener('mouseover',()=>{btn.style.backgroundColor='#206cd2';btn.style.color='black';btn.style.transform='scale(1.1)';btn.style.boxShadow='0 0 15px #206cd2'}); btn.addEventListener('mouseout',()=>{btn.style.backgroundColor='#ff7f00';btn.style.color='black';btn.style.transform='scale(1)';btn.style.boxShadow='none'}); btn.addEventListener('click',onClick); return btn; }
-  const newGameBtn=createButton('NEW HOSKY MODE GAME', ()=>{ container.remove(); currentRow=0; currentCol=0; gameOver=false; document.getElementById('win-message').style.display='none'; document.getElementById('alphabet').style.filter='none'; setBlur(false); for(let r=0;r<6;r++){ const cells=document.getElementById(`row${r}`).querySelectorAll('.cell'); cells.forEach(c=>{c.textContent='';c.className='cell'});} "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{ const box=document.getElementById(`letter-${l}`); if(box){box.style.backgroundColor='';box.style.color='#206cd2'} }); const persistedDiff=sessionStorage.getItem('glabble_hosky_difficulty')||hoskyDifficulty||'HARD'; hoskyDifficulty=persistedDiff; gibberishMode=(hoskyDifficulty==='GIBBERISH'); selectedMode='HOSKY'; sessionStorage.setItem('glabble_mode','HOSKY'); targetWord=pickHoskyWord(hoskyDifficulty); wordLength=targetWord.length; adjustBoardForWordLength(); saveGameState(); });
+  const newGameBtn = createButton('NEW GAME', () => {
+    container.remove();
+    gameWrapper.style.display = 'none';          // hide game
+    document.getElementById('win-message').style.display = 'none';
+    document.getElementById('lose-message').style.display = 'none';
+    document.getElementById('alphabet').style.filter = 'none';
+    setBlur(false);
+    
+    // show Hosky mode menu
+    document.getElementById('hosky-options-overlay').style.display = 'flex';
+});
+
   const pampGlabsBtn=createButton('PAMP GLABS', ()=>{ window.open("https://www.jpg.store/collection/hoskycashgrab?tab=items&filters=eyJmdXIiOlsiR29sZUVuIExhYnJhZG9yIl19",'_blank'); });
   container.appendChild(newGameBtn); container.appendChild(pampGlabsBtn); document.body.appendChild(container);
 }
