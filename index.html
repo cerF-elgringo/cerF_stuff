@@ -1,24 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="format-detection" content="telephone=no">
-<style>
-  /* Nuclear option – stops Android from shrinking everything */
-  html { 
-    -webkit-text-size-adjust: 100% !important; 
-    text-size-adjust: 100% !important; 
-  }
-  /* Force layout viewport = visual viewport on all Android */
-  @viewport { width: device-width; }
-  /* Old WebKit syntax some Samsungs still respect */
-  @-ms-viewport { width: device-width; }
-</style>
-<style>
-  body { transform: translateZ(0); } /* forces hardware acceleration + correct viewport */
-</style>
-<meta charset="utf-8" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>GLABDLE</title>
 <link href="https://fonts.cdnfonts.com/css/grobold" rel="stylesheet">
 <style>
@@ -492,21 +477,11 @@ const mi = document.getElementById('mobile-input');
   const cellByHeight = Math.floor((usableHeight - totalGapsV) / 6);
 
   const ORIGINAL_CELL = 48; 
-  // Inside adjustBoardForWordLength(), replace the old MIN_CELL logic with this:
-const BASE_MIN_CELL = 42;           // perfect size for 5–7 letter words
-const maxPossibleCells = 13;        // longest word we ever use
-const scaleFactor = wordLength > 7 
-    ? Math.max(0.55, 1 - (wordLength - 7) * 0.06)   // gracefully shrink longer words
-    : 1;
+  const MIN_CELL = 12;
 
-const MIN_CELL = Math.floor(BASE_MIN_CELL * scaleFactor);
-// → 5–7 letters  : 42 px (huge and gorgeous)
-// → 8 letters    : ~39 px
-// → 10 letters   : ~34 px
-// → 13 letters   : ~28 px (still perfectly readable, fits on even the tiniest Android)
-
-let cellSize = Math.min(cellByWidth, cellByHeight, ORIGINAL_CELL);
-if (cellSize < MIN_CELL) cellSize = MIN_CELL;
+  // Pick the smallest so it fits both width and height
+  let cellSize = Math.min(cellByWidth, cellByHeight, ORIGINAL_CELL); 
+  if(cellSize < MIN_CELL) cellSize = MIN_CELL;
 
   // Extra safety: shrink if total board still exceeds viewport
   const totalBoardHeight = (cellSize * 6) + totalGapsV + titleH + keyboardH + verticalReserve;
