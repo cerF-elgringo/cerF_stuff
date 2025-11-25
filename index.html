@@ -64,7 +64,7 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
 </head>
 <body>
 
-<div style="position:fixed;top:5px;left:5px;font-size:12px;color:#206cd2;font-family:'GROBOLD',sans-serif;z-index:120000;opacity:0.7;">v4.2.0.6.9.1</div>
+<div style="position:fixed;top:5px;left:5px;font-size:12px;color:#206cd2;font-family:'GROBOLD',sans-serif;z-index:120000;opacity:0.7;">v4.2.0.6.9</div>
 <div id="mode-select-overlay">
   <h1 style="font-size:72px;color:#206cd2;margin-bottom:20px;text-shadow:0 0 10px #00ff00,0 0 20px #00ff00,0 0 30px #00ff00">GLABDLE</h1>
   <h2 class="mode-title">Choose Mode</h2>
@@ -375,7 +375,9 @@ async function processGuess(guess){
   setBlur(true);
 
   // ADD BUTTONS FIRST
-  addWinButtons();
+  setTimeout(() => {
+    addWinButtons();
+}, 7000);
 
   // show gif
   const gifContainer = document.getElementById('win-gif-container');
@@ -419,7 +421,9 @@ async function processGuess(guess){
   document.getElementById('lose-poo-right').style.display='block';
   
   // ADD BUTTONS FIRST
-  addLoseButtons();
+  setTimeout(() => {
+    addloseButtons();
+}, 7000);
 
   startLosePoopRain(40);
   const loseGifs=["6289320449545116130","24576363","5408039","1639610178022128587","1514012758219765433"];
