@@ -640,14 +640,27 @@ async function processGuess(guess){
     for(let i=0;i<wordLength;i++){ if(results[i]==='gray' && letterCounts[guessLetters[i]]>0){ results[i]='yellow'; letterCounts[guessLetters[i]]--; } }
 
     for(let i=0;i<wordLength;i++){
-    cells[i].classList.remove('green','yellow','gray');
-    cells[i].classList.add(results[i]);
+    const delay = i * 0.25 * 1000; // Convert to milliseconds
+    
+    // Delay the color change to match the animation
+    setTimeout(() => {
+        cells[i].classList.remove('green','yellow','gray');
+        cells[i].classList.add(results[i]);
+        
+        // For keyboard: green/yellow on board = green on keyboard
+        const keyboardState = (results[i] === 'green' || results[i] === 'yellow') ? 'green' : 'gray';
+        updateAlphabet(cells[i].textContent, keyboardState);
+    }, delay);
+    
+    cells[i].style.animation = `revealLetter 0.6s ease forwards ${i*0.15}s`;
+    cells[i].addEventListener('animationend', ()=>cells[i].style.animation='', { once:true });
+
     
     // For keyboard: green/yellow on board = green on keyboard
     const keyboardState = (results[i] === 'green' || results[i] === 'yellow') ? 'green' : 'gray';
     updateAlphabet(cells[i].textContent, keyboardState);
     
-    cells[i].style.animation = `revealLetter 0.6s ease forwards ${i*0.15}s`;
+    cells[i].style.animation = `revealLetter 0.6s ease forwards ${i*0.20}s`;
     cells[i].addEventListener('animationend', ()=>cells[i].style.animation='', { once:true });
 }
 
