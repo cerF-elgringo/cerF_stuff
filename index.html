@@ -161,6 +161,58 @@ let wordLength = 5;
 
 document.getElementById('home-button').addEventListener('click', () => {
 
+    // Reset game state
+    gameOver = false;
+    currentRow = 0;
+    currentCol = 0;
+
+    // Clear the board
+    for (let r = 0; r < 6; r++) {
+        const cells = document.getElementById(`row${r}`).querySelectorAll('.cell');
+        cells.forEach(c => {
+            c.textContent = '';
+            c.className = 'cell';
+        });
+    }
+
+    // Reset alphabet colors
+    document.querySelectorAll('.letter-box').forEach(box => {
+        box.style.backgroundColor = 'rgba(0,0,0,0.9)';
+        box.style.color = '#206cd2';
+    });
+
+    // Hide game screen
+    gameWrapper.style.display = 'none';
+
+    // Hide win/lose text
+    document.getElementById('win-message').style.display = 'none';
+    document.getElementById('lose-message').style.display = 'none';
+
+    // Hide GIF containers
+    document.getElementById('win-gif-container').style.display = 'none';
+    document.getElementById('lose-gif-container').style.display = 'none';
+
+    // Stop poop rain
+    document.querySelectorAll('.falling-poo').forEach(el => el.remove());
+
+    // Remove dynamic end-screen buttons
+    const winButtons = document.getElementById('win-buttons-container');
+    if (winButtons) winButtons.remove();
+
+    const loseButtons = document.getElementById('lose-buttons-container');
+    if (loseButtons) loseButtons.remove();
+
+    // Close Hosky mode difficulty menu if open
+    document.getElementById('hosky-options-overlay').style.display = 'none';
+
+    // Remove blur
+    setBlur(false);
+
+    // Show mode select screen again
+    document.getElementById('mode-select-overlay').style.display = 'flex';
+
+    // Prevent word carryover
+    sessionStorage.removeItem('glabble_state');
 
 });
 
