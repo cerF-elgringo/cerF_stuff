@@ -663,7 +663,7 @@ async function processGuess(guess){
     const cells = row.querySelectorAll('.cell');
 
     if(!triggerWords.includes(guess) && !(await isValidWord(guess))){
-      alert("THAT AIN'T NO REAL WERD, IDJIOT!");
+      alert("NOT A REAL WORD N00B!");
       cells.forEach(c=>c.textContent='');
       currentCol = 0; updateActiveCell(); saveGameState(); return;
     }
