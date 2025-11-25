@@ -24,6 +24,15 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
 #alphabet{display:flex;flex-wrap:wrap;max-width:420px;justify-content:center;gap:5px;margin-top:5px}
 .letter-box{width:38px;height:38px;border:3.5px solid #206cd2;display:flex;justify-content:center;align-items:center;text-transform:uppercase;color:#206cd2;font-size:18px;user-select:none;border-radius:6px;background-color:rgba(0,0,0,0.9)}
 .letter-box:hover{background-color:#206cd2;color:black;transform:scale(1.1);box-shadow:0 0 8px #206cd2}
+.quantum-small-btn {
+    margin-top: 10px;
+    font-size: 20px !important;   /* smaller text */
+    padding: 8px 18px !important;  /* smaller button */
+    min-width: 200px !important;   /* narrower */
+    display: block;
+    margin-left: auto;
+    margin-right: auto;            /* centers it */
+}
 #letter-enter{margin-right:12px}#letter-backspace{margin-left:12px}
 @media(max-width:500px){html, body {
     padding: 10px;
@@ -84,6 +93,10 @@ h1{font-size:72px;margin-bottom:20px;color:#206cd2;text-shadow:0 0 5px #00ff00,0
     <button class="mode-btn" id="hosky-btn" type="button">HOSKY Words</button>
     <button class="mode-btn" id="normal-btn" type="button">NORMAL Words</button>
   </div>
+<!-- Quantum button BELOW the others -->
+<button class="mode-btn quantum-small-btn" id="quantum-btn" type="button">
+    QUANTUM HOSKY WEBSITE
+</button>
 </div>
 
 <div id="hosky-options-overlay">
@@ -147,6 +160,14 @@ let targetWord = "HOSKY";
 let wordLength = 5;
 
 document.getElementById('home-button').addEventListener('click', () => {
+
+
+});
+
+// QUANTUM HOSKY BUTTON → External redirect
+document.getElementById('quantum-btn').addEventListener('click', () => {
+    window.location.href = "https://quantumhosky.iog.io/";
+
     // Hide game wrapper & messages
     gameWrapper.style.display = 'none';
     document.getElementById('win-message').style.display = 'none';
